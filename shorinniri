@@ -46,6 +46,7 @@ UPDATE_IGNORE=(
     ".config/fcitx5"
     ".local/share/fcitx5"
     ".local/themes"
+    ".config/niri"
     # --- Matugen 动态生成的其他颜色文件保护 ---
     ".config/waybar/colors.css"
     ".cache/wal/colors.json"
