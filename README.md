@@ -1,8 +1,8 @@
 # shorin-niri
 
-Preset of Niri, best for chinese user, working out of the box.
+Shorin Niri DE, best for chinese user, working out of the box.
 
-Shorin的Niri预设，开箱即用。
+Shorin Niri桌面环境，开箱即用。
 
 ## Usage 使用方法
 
