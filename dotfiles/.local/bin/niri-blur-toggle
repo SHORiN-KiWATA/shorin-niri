@@ -1,0 +1,371 @@
+#!/usr/bin/env bash
+
+# 开启 Bash 严格模式
+# -e: 遇到非0返回值立即退出
+# -u: 遇到未定义变量报错并退出
+# -o pipefail: 管道中任意命令失败则整条管道返回失败
+set -euo pipefail
+
+# ==========================================
+# 脚本功能：Niri 测试版 (Blur) 与正式版热切换工具
+# 设计架构：利用 FHS 规范，将编译产物放置于 /usr/local/bin。
+# 配合 Systemd User Service Override 机制，带 --session 劫持 niri-session。
+# 支持参数：install, remove, update, toggle (默认), -h (帮助)
+# ==========================================
+
+# ==========================================
+# 全局变量定义
+# ==========================================
+NIRI_LOCAL_BIN="/usr/local/bin/niri"
+REPO_URL="https://github.com/niri-wm/niri.git"
+BRANCH="wip/branch"
+QUICKSAVE_BIN="${HOME}/.local/bin/quicksave"
+
+# 缓存与配置目录
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}"
+BUILD_DIR="${CACHE_DIR}/niri-blur-build"
+CONFIG_FILE="${HOME}/.config/niri/config.kdl"
+BLUR_CACHE_FILE="${CACHE_DIR}/niri_blur_user_config.kdl"
+
+# Systemd 覆盖配置路径 (用于劫持 niri-session)
+SYSTEMD_USER_DIR="${HOME}/.config/systemd/user/niri.service.d"
+SYSTEMD_OVERRIDE="${SYSTEMD_USER_DIR}/override.conf"
+
+MARKER_START="// --- NIRI BLUR TOGGLE AUTO-EDIT START ---"
+MARKER_END="// --- NIRI BLUR TOGGLE AUTO-EDIT END ---"
+
+# ==========================================
+# 终端输出美化函数 (定长标签，完美对齐)
+# ==========================================
+info()    { echo -e "\e[1;34m[ INFO ]\e[0m $1"; }
+success() { echo -e "\e[1;32m[  OK  ]\e[0m $1"; }
+warning() { echo -e "\e[1;33m[ WARN ]\e[0m $1"; }
+error()   { echo -e "\e[1;31m[ FAIL ]\e[0m $1"; exit 1; }
+bold()    { echo -e "\e[1m$1\e[0m"; }
+
+# ==========================================
+# 帮助信息模块
+# ==========================================
+show_help() {
+    echo -e "\e[1;36m====================================================\e[0m"
+    bold "  Niri 版本切换工具 (Stable <-> Blur Test)"
+    echo -e "\e[1;36m====================================================\e[0m"
+    echo ""
+    echo -e "用法: \e[1m$(basename "$0")\e[0m [参数]"
+    echo ""
+    bold "参数说明:"
+    echo "  toggle       (默认) 自动判断当前状态，在正式版与测试版间切换。"
+    echo "  install      强制编译并安装 Blur 测试版。"
+    echo "  remove       强制卸载测试版，恢复为官方正式版。"
+    echo "  update       热更新已安装的测试版源码并重新编译。"
+    echo "  -h, --help   显示此帮助信息并退出。"
+    echo ""
+    exit 0
+}
+
+# 获取脚本运行参数
+COMMAND="${1:-toggle}"
+
+# 拦截帮助指令
+if [[ "${COMMAND,,}" == "-h" || "${COMMAND,,}" == "--help" || "${COMMAND,,}" == "help" ]]; then
+    show_help
+fi
+
+# 动态检测 quicksave
+HAS_QUICKSAVE=false
+if [[ -x "$QUICKSAVE_BIN" ]] && command -v snapper &>/dev/null ; then
+    HAS_QUICKSAVE=true
+fi
+
+# ==========================================
+# Systemd 与配置管理函数
+# ==========================================
+apply_systemd_override() {
+    echo ""
+    info "配置 Systemd 劫持，确保图形会话启动测试版..."
+    mkdir -p "$SYSTEMD_USER_DIR"
+    
+    cat <<EOF > "$SYSTEMD_OVERRIDE"
+[Service]
+ExecStart=
+ExecStart=$NIRI_LOCAL_BIN --session
+EOF
+    systemctl --user daemon-reload
+    success "Systemd 劫持配置已生效。"
+}
+
+remove_systemd_override() {
+    if [[ -f "$SYSTEMD_OVERRIDE" ]]; then
+        echo ""
+        info "移除 Systemd 劫持，恢复原生 niri-session 行为..."
+        rm -f "$SYSTEMD_OVERRIDE"
+        rmdir "$SYSTEMD_USER_DIR" 2>/dev/null || true
+        systemctl --user daemon-reload
+        success "Systemd 劫持已解除。"
+    fi
+}
+
+remove_blur_config() {
+    if [[ -f "$CONFIG_FILE" ]]; then
+        echo ""
+        info "清理 config.kdl 中的测试版 Blur 配置..."
+        sed -n "\@^${MARKER_START}\$@,\@^${MARKER_END}\$@p" "$CONFIG_FILE" > "$BLUR_CACHE_FILE"
+        sed -i "\@^${MARKER_START}\$@,\@^${MARKER_END}\$@d" "$CONFIG_FILE"
+        success "配置文件已清理，历史参数已备份。"
+    fi
+}
+
+add_blur_config() {
+    if [[ -f "$CONFIG_FILE" ]]; then
+        echo ""
+        info "向 config.kdl 注入 Blur 配置..."
+        
+        # 内部静默清理，避免重复输出日志
+        sed -n "\@^${MARKER_START}\$@,\@^${MARKER_END}\$@p" "$CONFIG_FILE" > "$BLUR_CACHE_FILE"
+        sed -i "\@^${MARKER_START}\$@,\@^${MARKER_END}\$@d" "$CONFIG_FILE"
+        
+        if [[ -f "$BLUR_CACHE_FILE" && -s "$BLUR_CACHE_FILE" ]]; then
+            info "检测到历史微调配置，正在原样恢复..."
+            cat "$BLUR_CACHE_FILE" >> "$CONFIG_FILE"
+        else
+            info "未检测到历史配置，应用默认 Blur 模板..."
+            cat >> "$CONFIG_FILE" <<EOF
+${MARKER_START}
+blur {
+    passes 3
+    offset 2
+    noise 0.02
+    saturation 1.5
+}
+
+window-rule {
+    background-effect {
+        xray true
+        blur true
+    }
+}
+
+window-rule {
+    match is-floating=true
+    background-effect {
+        xray false
+        blur true
+    }
+}
+${MARKER_END}
+EOF
+        fi
+        success "Blur 配置注入完成。"
+    fi
+}
+
+# ==========================================
+# 智能编译函数
+# ==========================================
+build_niri() {
+    echo ""
+    info "进入智能编译流程..."
+    if ! command -v cargo &> /dev/null; then
+        warning "未检测到 rust/cargo，正在通过 pacman 安装..."
+        sudo pacman -S --needed --noconfirm cargo rust git clang
+    fi
+
+    mkdir -p "$CACHE_DIR"
+    if [[ -d "$BUILD_DIR" ]]; then
+        info "发现已有源码缓存，同步上游状态..."
+        cd "$BUILD_DIR"
+        
+        LOCAL_COMMIT=$(git rev-parse HEAD 2>/dev/null || echo "none")
+        git fetch origin "$BRANCH" >/dev/null 2>&1
+        REMOTE_COMMIT=$(git rev-parse origin/"$BRANCH")
+        
+        if [[ "$LOCAL_COMMIT" == "$REMOTE_COMMIT" && -f "./target/release/niri" ]]; then
+            success "上游源码无更新，且本地二进制文件完好，复用缓存！"
+            return 0
+        else
+            info "代码库有变更或产物缺失，开始拉取最新代码..."
+            git reset --hard "origin/$BRANCH" >/dev/null 2>&1
+        fi
+    else
+        info "初始化源码仓库，克隆到缓存区..."
+        git clone -b "$BRANCH" "$REPO_URL" "$BUILD_DIR" >/dev/null 2>&1
+        cd "$BUILD_DIR"
+    fi
+
+    info "开始执行 cargo build --release (需要些许时间)..."
+    cargo build --release
+
+    if [[ ! -f "./target/release/niri" ]]; then
+        echo ""
+        error "编译过程遭遇异常，未找到可执行文件！"
+    fi
+    success "编译成功！"
+}
+
+# ==========================================
+# 旧版遗留状态无缝迁移
+# ==========================================
+LEGACY_BAK="/usr/bin/niri.bak"
+LEGACY_BIN="/usr/bin/niri"
+
+if [[ -f "$LEGACY_BAK" ]]; then
+    echo ""
+    info "检测到旧版脚本遗留的系统级状态，触发无感迁移..."
+    sudo mv "$LEGACY_BIN" "$NIRI_LOCAL_BIN"
+    sudo mv "$LEGACY_BAK" "$LEGACY_BIN"
+    apply_systemd_override
+    success "系统遗留状态已修复，平滑迁移至新版 FHS 架构！"
+fi
+
+# ==========================================
+# 意图路由分析 (Intent Router)
+# ==========================================
+if [[ -f "$NIRI_LOCAL_BIN" ]]; then
+    CURRENT_STATE="BLUR_TEST"
+else
+    CURRENT_STATE="STABLE"
+fi
+
+ACTION=""
+
+case "${COMMAND,,}" in
+    install)
+        if [[ "$CURRENT_STATE" == "BLUR_TEST" ]]; then
+            error "已经是 Blur 测试版状态，如需更新请使用 update 命令。"
+        fi
+        ACTION="INSTALL"
+        ;;
+    remove)
+        if [[ "$CURRENT_STATE" == "STABLE" ]]; then
+            error "当前已经是官方正式版状态，无需执行移除。"
+        fi
+        ACTION="REMOVE"
+        ;;
+    update)
+        if [[ "$CURRENT_STATE" == "STABLE" ]]; then
+            error "当前系统处于正式版状态，请先使用 install 切换至测试版。"
+        fi
+        ACTION="UPDATE"
+        ;;
+    toggle|"")
+        if [[ "$CURRENT_STATE" == "BLUR_TEST" ]]; then
+            ACTION="REMOVE"
+        else
+            ACTION="INSTALL"
+        fi
+        ;;
+    *)
+        error "未知参数: $COMMAND. 请使用 -h 查看支持的参数列表。"
+        ;;
+esac
+
+# ==========================================
+# 动作执行前置交互
+# ==========================================
+echo -e "\n\e[1;36m====================================================\e[0m"
+if [[ "$ACTION" == "INSTALL" ]]; then
+    bold "  Niri 测试版安装向导 (wip/branch)"
+elif [[ "$ACTION" == "REMOVE" ]]; then
+    bold "  Niri 测试版卸载工具 (恢复官方版)"
+elif [[ "$ACTION" == "UPDATE" ]]; then
+    bold "  Niri 测试版热更新 (wip/branch)"
+fi
+echo -e "\e[1;36m====================================================\e[0m\n"
+
+bold "即将执行以下操作："
+
+if [[ "$HAS_QUICKSAVE" == true ]]; then
+    echo "  0. [快照] 运行 quicksave 创建 Btrfs 系统快照"
+fi
+
+if [[ "$ACTION" == "INSTALL" ]]; then
+    echo "  1. [检查] 获取最新代码，执行编译 (或复用缓存)"
+    echo "  2. [配置] 接管 Systemd 启动，注入 Blur 规则"
+elif [[ "$ACTION" == "REMOVE" ]]; then
+    echo "  1. [恢复] 移除本地编译产物与 Systemd 接管配置"
+    echo "  2. [清理] 清理 Blur 规则 (自动备份历史参数)"
+elif [[ "$ACTION" == "UPDATE" ]]; then
+    echo "  1. [更新] 拉取最新源码并重新编译"
+    echo "  2. [部署] 替换已有的测试版二进制文件"
+fi
+
+echo ""
+echo -e "\e[1;41;37m [ 警告 ] \e[0m"
+echo -e "\e[1;31m操作完成后，系统将向 Niri 发送退出指令以重启会话！\e[0m"
+echo -e "\e[1;31m所有未保存的应用程序进度将丢失，请提前保存。\e[0m"
+echo ""
+
+read -p "$(bold "是否确认执行上述操作？[y/N] ")" response
+if [[ "${response,,}" != "y" && "${response,,}" != "yes" ]]; then
+    echo ""
+    info "操作已取消，系统未受任何影响。"
+    exit 0
+fi
+
+echo ""
+info "开始执行操作流..."
+
+# 执行快照 (动态命名)
+if [[ "$HAS_QUICKSAVE" == true ]]; then
+    echo ""
+    info "正在触发 Btrfs 快速快照保护..."
+    "$QUICKSAVE_BIN" -d "quicksave-niri-blur-${ACTION,,}"
+    success "快照创建完成。"
+fi
+
+# ==========================================
+# 动作执行主逻辑
+# ==========================================
+if [[ "$ACTION" == "INSTALL" ]]; then
+    build_niri
+    
+    echo ""
+    info "正在部署二进制文件至优先执行路径..."
+    sudo cp ./target/release/niri "$NIRI_LOCAL_BIN"
+    success "二进制文件部署完成。"
+    
+    apply_systemd_override
+    add_blur_config
+    
+    echo ""
+    success "安装流程全部完成！"
+    warning "请在重启后检查 config.kdl 中的壁纸模糊相关参数。"
+
+elif [[ "$ACTION" == "REMOVE" ]]; then
+    echo ""
+    info "正在移除测试版二进制文件..."
+    sudo rm -f "$NIRI_LOCAL_BIN"
+    success "测试版文件已彻底清除。"
+    
+    remove_systemd_override
+    remove_blur_config
+    
+    echo ""
+    success "系统已安全回退至官方稳定版！"
+
+elif [[ "$ACTION" == "UPDATE" ]]; then
+    build_niri
+    
+    echo ""
+    info "正在替换本地测试版二进制文件..."
+    sudo cp ./target/release/niri "$NIRI_LOCAL_BIN"
+    success "二进制文件更新完成。"
+    
+    apply_systemd_override
+    
+    echo ""
+    success "热更新流程全部完成！"
+fi
+
+# ==========================================
+# 自动重启会话
+# ==========================================
+echo ""
+warning "准备结束当前 Niri 会话..."
+for i in {3..1}; do
+    echo -ne "将在 \e[1m$i\e[0m 秒后强制退出，请准备...\r"
+    sleep 1
+done
+echo ""
+
+niri msg action quit

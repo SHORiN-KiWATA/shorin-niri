@@ -1,0 +1,40 @@
+@import url("colors.css");
+
+/* 1. 主窗口 */
+window#osd {
+    background: none;
+    padding: 1em;
+    margin-bottom: 12em 6em 6em 6em; 
+}
+
+/* 2. 核心容器 */
+#container {
+    background-color: alpha(@secondary_container, 0.8);
+    border: 0.1em solid alpha(@outline, 0.8); 
+    border-radius: 0.5em;
+    padding: 0.8em 1.2em; 
+}
+
+/* 3. 文字与图标 */
+image, label {
+    color: @on_surface;
+}
+
+label {
+    font-size: 1.2em; 
+    margin-left: 0.8em;
+}
+
+/* 4. 进度条 */
+progressbar trough {
+    background-color: alpha(@on_surface, 0.25);
+    border-radius: 0.5em;
+    min-height: 0.3em;
+    min-width: 12em; 
+}
+
+progressbar progress {
+    background-color: @on_surface;
+    border-radius: 0.5em;
+    min-height: 0.2em;
+}

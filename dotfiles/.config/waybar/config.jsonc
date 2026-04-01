@@ -1,0 +1,65 @@
+{
+    //这个waybar因为大改过一次布局，所以箭头的位置和名字已经完全对不上了，从左到右看吧。
+    "include": [
+        "modules.jsonc",
+        "modules-dividers.jsonc"
+    ],
+    //这一行layer top设置会让waybar显示在最上方
+    "layer": "top",
+    //"output": "DP-2",
+    "position": "top",
+    "fixed-center": true,
+    // "height": 30,
+    "reload_style_on_change": true,
+    "modules-left": [
+        // "ext/workspaces",
+        "niri/workspaces",
+        "custom/right_div#5",
+        "cffi/niri-taskbar",
+        "niri/window",
+        //"dwl/window",
+        // "hyprland/window",
+        "custom/right_div#6"
+    ],
+    "modules-center": [
+        "custom/left_div#3",
+	// 这个模块是shorinNiri相关的常用命令
+	"custom/actions",
+        "custom/wfrec",
+        "custom/screenshot",
+	//"custom/wallpapers",
+	"custom/clipboard",
+        "custom/left_div#2",
+        "idle_inhibitor",
+        "custom/colorpicker",
+        "power-profiles-daemon",
+        "custom/left_div#11",
+        "custom/left_div#1",
+        "custom/applauncher",
+        "custom/right_div#1",
+        "custom/right_div#11",
+        "clock",
+        "custom/right_div#2",
+        //"clock#date",
+        "custom/cava",
+        //  "mpris",
+        "custom/right_div#3"
+        //"custom/right_div#4",
+    ],
+    "modules-right": [
+        // "group/backlight",
+        "custom/left_div#7",
+        "custom/updates",
+        "tray",
+        "custom/left_div#4",
+        "group/ddcutil",
+        "privacy",
+        "group/audio",
+        "custom/left_div#8",
+        "bluetooth",
+        "network",
+        "battery",
+        "custom/left_div#5",
+        "group/powermenu"
+    ]
+}

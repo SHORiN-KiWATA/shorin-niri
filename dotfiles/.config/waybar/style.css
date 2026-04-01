@@ -1,0 +1,513 @@
+@import "colors.css";
+
+/* 核心逻辑：全相对单位 (em) 改造
+   基准字体大小：18px
+   如果需要整体放大缩小，只需修改下方的 18px 即可
+*/
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "JetBrainsMono Nerd Font Propo","LXGW WenKai Screen","JetBrains Maple Mono","Font Awesome 7 Free";
+    /* font-family:"0xProto Nerd Font Propo"; */
+    font-size: 16.6px; /* 基准大小 */
+    opacity: 1;
+}
+
+window#waybar {
+    background: transparent;
+    color: @on_surface;
+}
+
+/* 鼠标悬浮信息提示 */
+tooltip {
+    background: @secondary_container;
+    border: 0.17em solid @outline; /* 3px */
+    opacity: 1;
+}
+
+tooltip label {
+    color: @on_surface;
+    font-size: 0.89em; /* 16px */
+}
+
+
+/* 工作区 */
+#workspaces button {
+    padding: 0px 0.56em; /* 10px */
+    background: @surface;
+    color: @tertiary_container;
+}
+
+/* #workspaces label {
+    font-size: 1.22em; 
+} */
+
+#workspaces button:hover {
+    background: @on_tertiary;
+}
+
+#workspaces button.active{
+    color:@tertiary;
+}
+
+#custom-right_div.5 {
+    background: @surface_container_high;
+    color: @surface;
+    font-size: 1.39em; /* 25px */
+    padding: 0px;
+}
+
+/* waybar niri taskbar */
+.niri-taskbar {
+    background: @surface_container_high;
+    padding: 0 0 0 0.28em; /* 5px */
+}
+
+.niri-taskbar button:hover {
+    background: @surface_container;
+}
+
+.niri-taskbar button.focused {
+    background: @surface;
+}
+
+.niri-taskbar button.urgent {
+    background-color: @tertiary;
+    animation-name: blink;
+    animation-duration: 0.5s;
+    animation-timing-function: steps(12);
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+}
+@keyframes blink {
+    to {
+        background-color: @primary;
+        color: @error;
+    }
+}
+
+/* 窗口名 */
+#window {
+    padding: 0px 0.56em; /* 10px */
+    background-color: @surface_container_high;
+    color: @on_surface;
+}
+
+#window label {
+    font-size: 0.89em; /* 16px */
+}
+
+window#waybar.empty #window {
+    background-color: @surface_container_high;
+}
+
+#custom-right_div.6 {
+    color: @surface_container_high;
+    font-size: 1.39em; /* 25px */
+    padding: 0px;
+}
+/* —————————————————————————————————————————————————————————————————————————— */
+/* —————————————————————————————————————————————————————————————————————————— */
+/* —————————————————————————————————————————————————————————————————————————— */
+/* —————————————————————————————————————————————————————————————————————————— */
+/* —————————————————————————————————————————————————————————————————————————— */
+
+/* 中间 */
+
+#custom-left_div.3 {
+    color: @surface_container_high;
+    /* 调节这里的padding可以移动中心的模块位置 */
+    padding: 0px 0em 0em 0.1em;
+    font-size: 1.39em; /* 25px */
+}
+
+
+#custom-actions {
+    padding: 0px 0.3em 0px 0.5em; /* 7px */
+    font-size: 1.35em; /* 20px */
+}
+
+ #custom-screenshot {
+    padding: 0px 0.35em; /* 7px */
+    font-size: 1.15em; /* 22px */
+}
+
+/* wf-recoder脚本 */
+#custom-wfrec {
+  padding: 0 0.25em; /* 7px */
+  font-size: 1.1em;
+}
+
+#custom-wallpapers{
+    padding: 0 0.5em 0 0.3em; /* 7px */
+    font-size: 1.15em; /* 22px */
+}
+#custom-clipboard{
+    padding: 0 0.5em 0 0.3em; /* 7px */
+    font-size: 1.15em; /* 22px */
+}
+
+
+#custom-wfrec.recording,
+#custom-wfrec,
+#custom-actions,
+#custom-wallpapers,
+#custom-clipboard,
+#custom-settings,
+#custom-screenshot {
+    background-color: @surface_container_high;
+    color: @secondary;
+}
+
+/* 录制中 */
+#custom-wfrec.recording {
+  color: @error;            
+}
+/* #custom-wfrec,
+#custom-screenshot{
+    color: @secondary;
+} */
+
+#custom-left_div.2 {
+    background-color: @surface_container_high;
+    color: @tertiary;
+    padding: 0px 0px;
+    font-size: 1.39em; /* 25px */
+}
+
+#power-profiles-daemon,
+#custom-colorpicker,
+#idle_inhibitor {
+    background-color: @tertiary;
+    color: @on_tertiary;
+    padding: 0px 0.36em; /* 6px */
+}
+#idle_inhibitor.activated{
+    padding: 0px 0.4em 0px 0.4em;
+}
+#power-profiles-daemon{
+    padding: 0px 0.4em 0em 0.36em;
+}
+#power-profiles-daemon.performance {
+    color: @on_error;
+    font-size: 1.28em; /* 23px */
+    padding: 0px 0.32em 0px 0.45em; /* 9px 8px */
+}
+
+#power-profiles-daemon.balanced {
+    color: @on_tertiary;
+}
+
+#power-profiles-daemon.power-saver {
+    color: #1aa052;
+
+}
+
+/* 菜单 */
+#custom-left_div.11 {
+    background-color: @tertiary;
+    color: @surface_container
+}
+#custom-applauncher {
+    font-size: 1.39em; /* 25px */
+    padding: 0px 0.39em; /* 7px */
+    margin: 0px;
+    background-color: @primary;
+    color: @on_primary;
+
+}
+#custom-right_div.1,
+#custom-left_div.1 {
+    background-color: @surface_container;
+    color: @primary;
+}
+#custom-left_div.1,
+#custom-right_div.1 {
+    padding: 0px;
+    margin: 0px;
+    font-size: 1.39em; /* 25px */
+}
+#custom-left_div.11,
+#custom-right_div.11 {
+    margin: 0px;
+    padding: 0px;
+    font-size: 1.39em; /* 25px */
+}
+#custom-right_div.11 {
+
+    background-color: @secondary;
+    color: @surface_container;
+}
+
+/*中间右边第二级*/
+
+#clock {
+    padding: 0px 0.45em 0em 0.45em; /* 8px */
+}
+
+#clock {
+    background-color: @secondary;
+    color: @on_secondary;
+}
+
+#custom-right_div.2 {
+    background-color: @surface_container_high;
+    color: @secondary;
+    padding: 0px;
+    font-size: 1.39em; /* 25px */
+}
+
+#custom-cava {
+    background-color: @surface_container_high;
+    color: @primary;
+    padding: 0px 0.35em; /* 7px */
+}
+
+#mpris {
+    background-color: @surface_container_high;
+    color: @primary;
+    padding: 0px 0.39em 0px 0px; /* 7px 0 0 */
+}
+
+#custom-right_div.3 {
+
+    color: @surface_container_high;
+    /* 调节这里的padding可以移动中心的模块位置 */
+    padding: 0px 0em 0px 0px ;
+    font-size: 1.39em; /* 25px */
+}
+#custom-right_div.4 {
+    /* background-color: @surface_container_high; */
+    color: @on_secondary;
+    padding: 0px;
+    font-size: 1.39em; /* 25px */
+}
+/* —————————————————————————————————————————————————————————————————————————— */
+/* —————————————————————————————————————————————————————————————————————————— */
+/* —————————————————————————————————————————————————————————————————————————— */
+/* —————————————————————————————————————————————————————————————————————————— */
+/* —————————————————————————————————————————————————————————————————————————— */
+
+/* 右侧 */
+
+
+#custom-left_div.7 {
+    /* background-color: @surface_container_high; */
+    color: @surface_bright;
+    font-size: 1.39em; /* 25px */
+    padding: 0px;
+}
+
+
+#custom-updates {
+    border-radius: 0px;
+    padding: 0px 0.17em 0px 0.39em; /* 3px 7px */
+    background-color: @surface_bright;
+    color: @error;
+
+}
+
+#tray {
+    padding: 0px 0.39em 0px 0.39em; /* 7px */
+    font-size: 1.11em; /* 20px */
+    background-color: @surface_bright;
+}
+
+
+#custom-left_div.4 {
+    background-color: @surface_bright;
+    color: @surface_container_high;
+    padding: 0px;
+    font-size: 1.39em; /* 25px */
+}
+/* 亮度 */
+#custom-ddcutil-day,
+#custom-ddcutil-night,
+#custom-ddcutil-sleep,
+#custom-separator.1 {
+    background-color: @surface_container_high;
+    color: @tertiary;
+    padding: 0px 0.33em; /* 5px */
+}
+
+#backlight {
+    background-color: @surface_container_high;
+    color: @tertiary;
+    padding: 0px 0.28em 0px 0px; /* 5px */
+}
+
+#backlight-slider {
+    background-color: @surface_container_high;
+    padding: 0px 0.28em 0px 0px; /* 5px */
+}
+
+#backlight-slider slider {
+    min-height: 0px;
+    min-width: 0px;
+    opacity: 0;
+    background-image: none;
+    border: none;
+    box-shadow: none;
+    background: none;
+}
+
+#backlight-slider trough {
+    min-height: 0.56em; /* 10px */
+    min-width: 4.44em;  /* 80px */
+    border-radius: 0.28em; /* 5px */
+    opacity: 0;
+    background-color: @background;
+}
+
+#backlight-slider highlight {
+    min-width: 0.56em; /* 10px */
+    border-radius: 0.28em; /* 5px */
+    background-color: @tertiary;
+}
+
+/* 音视频 */
+#privacy {
+    padding: 0px 0.39em; /* 7px */
+}
+
+#privacy {
+    background-color: @surface_container_high;
+    color: @error;
+}
+
+#pulseaudio {
+    padding: 0px 0px 0px 0.28em; /* 5px */
+}
+
+#pulseaudio-slider {
+    padding: 0px 0px 0px 0.56em; /* 10px */
+    margin: 0px;
+}
+
+#pulseaudio-slider,
+#pulseaudio {
+    background-color: @surface_container_high;
+    color: @tertiary;
+}
+
+#pulseaudio-slider slider {
+    min-height: 0px;
+    min-width: 0px;
+    opacity: 0;
+    background-image: none;
+    box-shadow: none;
+    background: none;
+}
+
+#pulseaudio-slider trough {
+    min-height: 0.56em; /* 10px */
+    min-width: 4.44em; /* 80px */
+    border-radius: 0.28em; /* 5px */
+    background-color: @surface;
+}
+
+#pulseaudio-slider highlight {
+    min-width: 0px;
+    border-radius: 0.28em; /* 5px */
+    background-color: @tertiary;
+}
+
+#custom-left_div.8 {
+    background-color: @surface_container_high;
+    color: @surface_container;
+    font-size: 1.39em; /* 25px */
+    padding: 0px;
+}
+
+
+/* 电池 */
+#bluetooth,
+#bluetooth.disabled,
+#network,
+#battery {
+    background-color: @surface_container;
+    color: @secondary;
+    padding: 0px 0.39em; /* 7px */
+    
+}
+
+#battery.critical:not(.charging) {
+    background-color: @surface_container;
+    color: @error;
+    animation-name: blink;
+    animation-duration: 0.5s;
+    animation-timing-function: steps(12);
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    padding: 0px 0.39em; /* 7px */
+}
+
+#bluetooth {
+    padding: 0px 0.3em 0 0.5em; /* 7px */
+    font-size: 1.13em; /* 20px */
+
+    
+}
+#bluetooth.disabled{
+    padding: 0px 0.2em 0px 0.46em ;
+}
+
+#network {
+    padding: 0px 0.35em 0 0.3em; /* 7px */
+    font-size: 1.1em; /* 22px */
+
+}
+
+
+/* powermenu电源菜单 */
+#custom-left_div.5 {
+    background-color: @surface_container;
+    color: @surface;
+    padding: 0px;
+    font-size: 1.39em; /* 25px */
+}
+#custom-wlogout {
+    padding: 0px 0.83em 0px 0.56em; /* 15px 10px */
+    font-size: 1.39em; /* 25px */
+}
+
+#custom-wlogout,
+#custom-reboot,
+#custom-lockscreen,
+#custom-logout {
+    background-color: @surface;
+    color: @error;
+    padding: 0px 0.56em; /* 10px */
+}
+
+
+
+
+
+#clock.date {
+    padding: 0px 0.39em; /* 7px */
+}
+#custom-datelogo,
+#clock.date {
+    background-color: @secondary_container;
+    color: @on_secondary_container;
+}
+
+#custom-swaync {
+    background-color: @surface_container_high;
+    color: @on_surface_container;
+    padding: 0px 0.83em; /* 15px */
+}
+
+#custom-mako {
+    background-color: @surface_container_high;
+    color: @on_surface_container;
+    padding: 0px 0.83em; /* 15px */
+}
+
+#custom-left_div.6 {
+    background-color: @surface;
+    color: @surface_container_high;
+    padding: 0px;
+    font-size: 1.39em; /* 25px */
+}

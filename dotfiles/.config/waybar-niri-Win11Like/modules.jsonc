@@ -1,0 +1,430 @@
+{
+  //电池电量
+  "battery": {
+    "interval": 60,
+    "states": {
+      "critical": 20,
+    },
+    "format": "{icon}",
+    "format-charging": "󰂄 {capacity}% ",
+    "format-icons": ["󰂎", "󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂂", "󰁹"],
+    "tooltip-format": "剩余电量：{capacity}%\n充 放 电 ：{power}\n可用时间：{timeTo}\n---\n电池健康度：{health}%",
+  },
+  //时钟
+  "clock": {
+    "interval": 60,
+    "format": "{:%H:%M}",
+    //"format-alt": "{:%Y/%m/%d %A}",
+   // "tooltip":false,
+    "tooltip-format": "{:%Y/%m/%d %A}\n---\n左键：打开时钟\n右键：打开日历",
+    "max-length": 25,
+    "on-click": "gnome-clocks",
+    "on-click-right": "gnome-calendar",
+  },
+  "clock#date": {
+    // "interval":
+    "format": "󰸗 {:%m-%d}",
+    // "timezone":
+    // "timezones":
+    // "locale":
+    // "rotate":
+    // "on-click":
+    // "on-click-middle":
+    // "on-click-right":
+    // "on-scroll-up":
+    // "on-scroll-down":
+    // "smooth-scrolling-threshold":
+    // "tooltip":
+    "on-click": "gnome-calendar",
+    "tooltip-format": "{:%Y/%m/%d %A}",
+  },
+  //正在运行的软件
+  "tray": {
+    "icon-size": 24,
+    "spacing": 7,
+    // 自定义图标
+    // "icons": {
+    //     "blueman": "/home/shorin/.config/waybar/logo/bluetooth.png",
+    // },
+  },
+  //工作区和窗口名字
+  "niri/workspaces": {
+    "format": "{icon}",
+    "format-icons": {
+      "active": "󰜋",
+      "default": "",
+    },
+  },
+  "niri/window": {
+    "format": "{}",
+    "rewrite": {
+      "(.*) - Mozilla Firefox": "🌎 $1",
+      "(.*) - zsh": "> [$1]",
+    },
+  },
+  //网络和蓝牙
+  "group/network-bluetooth": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-left-to-right": false,
+    },
+    "modules": ["network", "bluetooth"],
+  },
+  "network": {
+    "format-disconnected": "{icon}",
+    "format-wifi": "{icon}",
+    "format-ethernet": "{icon}",
+    "format-icons": {
+      "disconnected": "󰤮",
+      "wifi": ["󰤯", "󰤟", "󰤢", "󰤥", "󰤨"],
+      "ethernet": "󰈀",
+    },
+    //鼠标悬浮在wifi图标上会显示wifi名称、信号强度、ip地址、设备名
+    "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ifname} : {ipaddr}\n---\n左键：打开面板\n右键：打开高级网络配置工具",
+    "tooltip-format-ethernet": "{ifname} : {ipaddr}\n---\n左键：打开面板\n右键：打开高级网络配置工具",
+    "tooltip-format-disconnected": "网络未连接\n---\n左键：打开面板\n右键：打开高级网络配置工具",
+    "on-click": "kitty --class network-tui -e ~/.config/waybar/scripts/select-network-tui.sh",
+    "on-click-right": "nm-connection-editor",
+  },
+  "bluetooth": {
+    //蓝牙关闭状态下的图标和鼠标悬浮时的提示
+    "format-disabled": "󰂲",
+    "tooltip-format-disabled": "右键：启用蓝牙",
+    "format": "󰂯",
+    "tooltip-format-on": "左键：打开面板\n右键：禁用蓝牙",
+    //连接状态下的图标和提示
+    "format-connected": "󰂱",
+    "tooltip-format-connected": "󰂱 {device_alias}\n---\n左键：打开面板",
+    //点击功能
+    "on-click-right": "~/.config/waybar/scripts/toggle-bluetooth.sh",
+    "on-click": "kitty --class bluetui -e bluetui",
+  },
+  //左键循环切换性能模式
+  "power-profiles-daemon": {
+    "format": "{icon}",
+    "tooltip-format": "当前性能模式：{profile}\n---\n左键：切换性能模式",
+    "tooltip": true,
+    "format-icons": {
+      "performance": "󱐋",
+      "balanced": "",
+      "power-saver": "",
+    },
+  },
+  //工具组
+  "group/tools": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-left-to-right": false,
+    },
+    "modules": ["network", "bluetooth"],
+  },
+  //截图
+   "custom/screenshot" :{
+    "format": "",
+    "tooltip-format": "左键：快速截图（仅保存到剪贴板）\n右键：打开菜单\n中键：打开长截图菜单",
+    "on-click":"~/.config/waybar/scripts/screenshot.sh",
+    "on-click-right": "~/.config/waybar/scripts/power-screenshot.sh",
+    "on-click-middle":"~/.config/waybar/scripts/longshot-sh/longshot.sh"
+  },
+  
+  //录屏screenrec
+  "custom/wfrec": {
+    "exec": "~/.config/waybar/scripts/screenrec status-json",
+    "return-type": "json",
+    //"interval": 1,                 // 每秒刷新一次
+    "signal": 9, // 与脚本里的 WAYBAR_SIG 对应
+    "tooltip": true,
+    "on-click": "~/.config/waybar/scripts/screenrec toggle", // 左键：开始/停止
+    "on-click-right": "~/.config/waybar/scripts/screenrec stop"
+  },
+
+  //声音模块
+  "group/audio": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-left-to-right": false,
+    },
+    "modules": ["pulseaudio", "pulseaudio/slider"],
+  },
+  "pulseaudio": {
+    "tooltip-format": "左键：静音\n右键：关闭麦克风\n中键：打开面板",
+    "format": "{icon}{volume}% {format_source}",
+    //"format-bluetooth": "{volume}% {format_source}",
+    "format-source": "{volume}%",
+    "format-source-muted": "",
+    "format-muted": " {format_source}",
+    "format-icons": {
+      "headphone": "",
+      "headset": "",
+      "bluetooth": "",
+      // "speaker":"󰓃"
+      "speaker": ["", "", ""],
+    },
+    "on-click": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+    "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle",
+    "on-click-middle": "pavucontrol --tab=3",
+    "on-scroll-up": "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%+",
+    "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SOURCE@ 5%-",
+  },
+  "pulseaudio/slider": {
+    "min": 0,
+    "max": 100,
+    "orientation": "horizontal",
+  },
+  //多媒体
+  "mpris": {
+    "format": "{player_icon}",
+    "format-paused": "{status_icon}",
+    "player-icons": {
+      "default": "⏸",
+    },
+    "status-icons": {
+      "paused": "▶",
+    },
+    "toooltip": "{dynamic}",
+    "enable-tooltip-len-limits": true,
+  },
+  //logo+程序启动器
+  "custom/applauncher": {
+    "tooltip-format": "左键：软件启动菜单\n右键：打开终端",
+    "format": "",
+    "on-click": "fuzzel",
+    "on-click-right":"kitty || ghostty || alacritty || foot || konsole",
+    "on-click-middle": "~/.config/scripts/niri_auto_blur_bg.sh || pkill -f niri_auto_blur_bg.sh"
+  },
+  //电源菜单
+  "group/powermenu": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-left-to-right": false,
+    },
+    "modules": [
+      "custom/wlogout",
+      "custom/reboot",
+      "custom/logout",
+      "custom/lockscreen",
+    ],
+  },
+  "custom/wlogout": {
+    "tooltip-format": "左键：关机",
+    "format": "󰐥",
+    "on-click": "choice=$(echo -e '否\\n是' | fuzzel --dmenu --prompt '确定要关机吗？ ' --lines 2); [ \"$choice\" = '是' ] && notify-send '关机中...' && systemctl poweroff",
+    "on-scroll-up": "true",
+    "on-scroll-down": "true"
+  },
+  "custom/lockscreen": {
+    "tooltip-format": "左键：锁屏",
+    "format": "",
+    "on-click": "swaylock || hyprlock",
+    "on-scroll-up": "true",
+    "on-scroll-down": "true"
+  },
+  "custom/reboot": {
+    "tooltip-format": "左键：重启",
+    "format": "",
+    "on-click": "choice=$(echo -e '否\\n是' | fuzzel --dmenu --prompt '确定要重启吗？ ' --lines 2); [ \"$choice\" = '是' ] && notify-send '重启中...' && systemctl reboot",
+    "on-scroll-up": "true",
+    "on-scroll-down": "true"
+  },
+  "custom/logout": {
+    "tooltip-format": "左键：登出",
+    "format": "󰈆",
+    "on-click": "niri msg action quit",
+    "on-scroll-up": "true",
+    "on-scroll-down": "true"
+  },
+  //内屏亮度
+  "backlight/slider": {
+    "min": 5,
+    "max": 100,
+    "orientation": "horizontal",
+  },
+  "backlight": {
+    "tooltip": true,
+    "format": "{icon}",
+    "format-icons": ["", "", "", "", "", "", "", "", ""],
+    "tooltip-format":"内屏亮度"
+  },
+  //调节外接屏幕亮度
+  "group/ddcutil": {
+    "orientation": "inherit",
+    "drawer": {
+      "transition-left-to-right": false,
+    },
+    "modules": [
+      "custom/ddcutil-day",
+      "backlight/slider",
+      "backlight",
+      "custom/separator#1",
+      "custom/ddcutil-sleep",
+      "custom/ddcutil-night",
+    ],
+  },
+  "custom/ddcutil-day": {
+    "tooltip-format": "左键：100%外接显示器亮度\n右键：开关护眼模式",
+    "format": "󰃠",
+    "on-click": "ddcutil --display 1 setvcp 10 100 ",
+    "on-click-right":"~/.local/bin/toggle-wlsunset",
+    "on-scroll-up":"true",
+    "on-scroll-down":"true"
+  },
+  "custom/ddcutil-night": {
+    "tooltip-format": "左键：65%外接显示器亮度",
+    "format": "󰃟",
+    "on-click": "ddcutil --display 1 setvcp 10 65 ",
+    "on-scroll-up":"true",
+    "on-scroll-down":"true"
+  },
+  "custom/ddcutil-sleep": {
+    "tooltip-format": "左键：5%外接显示器亮度",
+    "format": "󰃞",
+    "on-click": "ddcutil --display 1 setvcp 10 5 ",
+    "on-scroll-up":"true",
+    "on-scroll-down":"true"
+  },
+  //swaync通知模块
+  "custom/swaync": {
+    "tooltip": false,
+    "format": "{icon}",
+    "format-icons": {
+      "notification": "<span foreground='red'><sup></sup></span>",
+      "none": "",
+      "dnd-notification": "<span foreground='red'><sup></sup></span>",
+      "dnd-none": "",
+      "inhibited-notification": "<span foreground='red'><sup></sup></span>",
+      "inhibited-none": "",
+      "dnd-inhibited-notification": "<span foreground='red'><sup></sup></span>",
+      "dnd-inhibited-none": "",
+    },
+    "return-type": "json",
+    "exec-if": "which swaync-client",
+    "exec": "swaync-client -swb",
+    "on-click": "swaync-client -t -sw",
+    "on-click-right": "swaync-client -d -sw",
+    "escape": true,
+  },
+  "custom/mako": {
+    "format": "",
+    "on-click": "makoctl restore",
+  },
+  //gnome-control-center 
+  "custom/settings": {
+    "format": "",
+    "on-click": "env XDG_CURRENT_DESKTOP=GNOME gnome-control-center",
+    "tooltip-format": "Open control center",
+  },
+  //获取屏幕颜色colorpicker
+  "custom/colorpicker": {
+    "tooltip": true,
+    "format": "󱏜",
+    "on-click": "hyprpicker -a && pw-play /usr/share/sounds/freedesktop/stereo/message.oga",
+    "on-click-middle":"~/.config/scripts/matugen-select-type.sh",
+    "on-click-right":"waypaper",
+    "tooltip-format":"左键：提取颜色\n右键：打开壁纸切换器\n中键：切换系统配置方案",
+  },
+  //音频可视化
+  "custom/cava": {
+    "tooltip": false,
+    "format": "{}",
+    "exec": "$HOME/.config/waybar/scripts/cava.sh",
+  },
+  //禁止熄屏
+  "idle_inhibitor": {
+    "format": "{icon}",
+    "format-icons": {
+      "activated": "",
+      "deactivated": "",
+    },
+    "start-activated":true,
+        "tooltip-format-activated": "自动熄屏已禁用",
+    "tooltip-format-deactivated": "自动熄屏已开启",
+    "on-click-right":"~/.config/scripts/matugen-select-type.sh"
+  },
+  //分隔符󰇝 󱋱
+  "custom/separator#1": {
+    "format": "󱋱",
+    "tooltip": false,
+  },
+    "custom/separator#2": {
+    "format": "",
+    "tooltip": false,
+  },
+  //archupdater
+"custom/updates": {
+    "format": "{}{icon}",
+    "return-type": "json",
+    "format-icons": {
+      "has-updates": "",
+      "updated": ""
+    },
+    "exec": "~/.config/waybar/scripts/check-updates.sh",
+    "restart-interval": 0,
+    "on-click": "kitty -e sysup",
+    "on-click-middle": "pkill -SIGUSR1 -f ~/.config/waybar/scripts/check-updates.sh",
+    "on-click-right": "kitty --class floating-term  -e shorin checkallupdates" 
+  },
+  //隐私
+  "privacy": {
+    "icon-spacing": 10,
+    "icon-size": 18,
+    "transition-duration": 250,
+    "modules": [
+      {
+        "type": "screenshare",
+        "tooltip": true,
+        "tooltip-icon-size": 24,
+      },
+    ],
+  },
+  "cffi/niri-taskbar": {
+    // module_path
+    "module_path": "/usr/lib/waybar/libniri_taskbar.so",
+    
+    "apps": {
+      "signal": [
+        {
+          "match": "\\([0-9]+\\)$",
+          "class": "unread",
+        },
+      ],
+    },
+  },
+  // dwl and mangowc
+  "ext/workspaces": {
+    "format": "{icon}",
+    //"format-icons": {
+    //        "active": "󰜋",
+    //        "default": ""
+    //    },
+    "ignore-hidden": true,
+    "on-click": "activate",
+    "on-click-right": "deactivate",
+    "sort-by-id": true,
+  },
+  "dwl/window": {
+    "format": "[{layout}]{title}",
+  },
+    //剪贴板
+  "custom/clipboard":{
+    "format":"󰅍",
+    "on-click":"kitty --class shorinclip -e shorinclip",
+    "on-click-middle":"pkill wl-paste || true && wl-paste --watch cliphist store && sleep 0.5 && systemctl restart --user clipsync-git",
+    "on-click-right":"rm -f ~/.cache/cliphist/db",
+    "tooltip-format":"左键：打开剪贴板\n右键：清除剪贴板历史\n中键：重启剪贴板后台服务"
+  },
+  // 壁纸切换
+ "custom/wallpapers":{
+    "format":"󰸉",
+    "tooltip-format":"左键：打开壁纸切换器\n右键：随机切换壁纸\n中键：随机下载动漫壁纸",
+    "on-click":"waypaper",
+    "on-click-right":"waypaper --random",
+    "on-click-middle":"~/.config/scripts/random-anime-wallpaper.sh"
+ },
+ // 常用命令
+ "custom/actions":{
+   "format":"",
+   "tooltip-format":"左键：常用命令",
+   "on-click":"~/.config/waybar/scripts/command-center.sh"
+ }
+
+}
