@@ -43,6 +43,25 @@ UPDATE_IGNORE=(
     ".config/niri/output.kdl"
     ".config/fcitx5"
     ".local/share/fcitx5"
+    ".local/themes"
+    # --- Matugen 动态生成的其他颜色文件保护 ---
+    ".config/waybar/colors.css"
+    ".cache/wal/colors.json"
+    ".config/fuzzel/colors.ini"
+    ".config/kitty/themes/matugen.conf"
+    ".config/mako/colors.conf"
+    ".config/btop/themes/matugen.theme"
+    ".config/cava/themes/your-theme"
+    ".config/starship.toml"
+    ".config/yazi/theme.toml"
+    ".config/niri/colors.kdl"
+    ".cache/matugen/recoloricons.sh"
+    ".config/swayosd/colors.css"
+    ".config/fastfetch/config.jsonc"
+    ".cache/matugen/hypr/colors.conf"
+    ".cache/matugen_vscode_inject.json"
+    ".config/obs-studio/themes/matugen.obt"
+    
 )
 
 # 动态合成最终的黑名单
@@ -92,7 +111,6 @@ manage_protection() {
         return
     fi
     
-    # 智能解析相对/绝对路径
     local abs_path
     abs_path="$(realpath -m "$target")"
     local rel_path="${abs_path#$HOME/}"
@@ -103,10 +121,7 @@ manage_protection() {
     fi
     
     if [[ "$action" == "add" ]]; then
-        # 静默跳过验证：如果模板仓库里根本没这个文件，直接跳过不作处理
-        if [[ ! -e "$TEMPLATE_DIR/$rel_path" ]]; then
-            return
-        fi
+        if [[ ! -e "$TEMPLATE_DIR/$rel_path" ]]; then return; fi
         
         if grep -Fxq "$rel_path" "$USER_IGNORE_FILE"; then
             info "$(_t "Path is already protected." "该路径已在保护列表中。")"
@@ -115,7 +130,7 @@ manage_protection() {
             ok "$(_t "Protected: ~/$rel_path" "已添加保护: ~/$rel_path")"
         fi
         
-    elif [[ "$action" == "remove" ]]; then
+        elif [[ "$action" == "remove" ]]; then
         sed -i "\|^$rel_path$|d" "$USER_IGNORE_FILE" 2>/dev/null
         ok "$(_t "Unprotected: ~/$rel_path" "已取消保护: ~/$rel_path")"
     fi
@@ -163,7 +178,6 @@ sync_dotfiles() {
     local sync_count=0
     local skip_count=0
     
-    # 动态加载所有保护规则
     build_ignore_list
     
     if [[ "$mode" == "update" ]]; then
@@ -301,19 +315,6 @@ apply_user_configs() {
         echo 'kitty.desktop' >> "$HOME/.config/xdg-terminals.list"
     fi
     
-    info "$(_t "Initializing GTK themes and dark mode..." "正在初始化 GTK 主题与深色模式...")"
-    mkdir -p "$HOME/.config/gtk-4.0" 2>/dev/null
-    touch "$HOME/.config/gtk-4.0/dank-colors.css"
-    if ! grep -q "dank-colors.css" "$HOME/.config/gtk-4.0/gtk.css" 2>/dev/null; then
-        echo '@import url("dank-colors.css");' >> "$HOME/.config/gtk-4.0/gtk.css"
-    fi
-    
-    mkdir -p "$HOME/.config/gtk-3.0" 2>/dev/null
-    touch "$HOME/.config/gtk-3.0/dank-colors.css"
-    if ! grep -q "dank-colors.css" "$HOME/.config/gtk-3.0/gtk.css" 2>/dev/null; then
-        echo '@import url("dank-colors.css");' >> "$HOME/.config/gtk-3.0/gtk.css"
-    fi
-    
     if command -v gsettings >/dev/null 2>&1; then
         gsettings set org.gnome.desktop.interface color-scheme "prefer-dark" >/dev/null 2>&1
         gsettings set org.gnome.desktop.interface gtk-theme "adw-gtk3-dark" >/dev/null 2>&1
@@ -367,7 +368,7 @@ apply_user_configs() {
 remove_dotfiles() {
     step "$(_t "Uninstall & Cleanup" "卸载与清理")"
     
-    warn "$(_t "WARNING: This will remove all Shorin Niri managed configs!" "警告：这将移除家目录下所有由 Shorin Niri 管理的配置文件！")"
+    warn "$(_t "WARNING: This will remove all Shorin Niri managed configs from your home directory!" "警告：这将移除家目录下所有由 Shorin Niri 管理的配置文件！")"
     warn "$(_t "Note: Cleaning system-level configs requires sudo." "注意：清理系统级配置 (如 Firefox 策略) 可能需要输入密码提权。")"
     
     local confirm
@@ -399,10 +400,9 @@ remove_dotfiles() {
         if [[ -d "$dest_dir" ]]; then rmdir "$dest_dir" 2>/dev/null; fi
     done
     
-    info "$(_t "Removing placeholders & policies..." "正在移除占位文件、GTK 注入配置与系统级策略...")"
-    if [[ -f "$HOME/.config/gtk-4.0/gtk.css" ]]; then sed -i '/@import url("dank-colors.css");/d' "$HOME/.config/gtk-4.0/gtk.css" 2>/dev/null; fi
-    if [[ -f "$HOME/.config/gtk-3.0/gtk.css" ]]; then sed -i '/@import url("dank-colors.css");/d' "$HOME/.config/gtk-3.0/gtk.css" 2>/dev/null; fi
-    rm -f "$HOME/.config/gtk-4.0/dank-colors.css" "$HOME/.config/gtk-3.0/dank-colors.css" "$HOME/.config/niri/dms/colors.kdl" 2>/dev/null
+    info "$(_t "Removing placeholders & policies..." "正在移除占位文件与系统级策略...")"
+    
+    rm -f "$HOME/.config/niri/dms/colors.kdl" 2>/dev/null
     rmdir "$HOME/.config/niri/dms" 2>/dev/null
     
     if [[ -f "/etc/firefox/policies/policies.json" ]]; then
