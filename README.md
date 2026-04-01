@@ -47,4 +47,4 @@ Shorin Niri，基于Niri和waybar的桌面预设，开箱即用。
 
 ## Docs 文档
 
-    [shorin-niri]([https://](https://github.com/SHORiN-KiWATA/Shorin-ArchLinux-Guide/wiki/ShorinNiri%E5%8A%9F%E8%83%BD%E4%BB%8B%E7%BB%8D))
+[shorin-niri]([https://](https://github.com/SHORiN-KiWATA/Shorin-ArchLinux-Guide/wiki/ShorinNiri%E5%8A%9F%E8%83%BD%E4%BB%8B%E7%BB%8D))
