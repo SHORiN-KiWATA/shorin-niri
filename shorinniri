@@ -29,7 +29,7 @@ step() { echo -e "\n${C_CYA}>>> $1${C_DEF}"; }
 # 2. 全局变量与配置
 # ==========================================
 TEMPLATE_DIR="/usr/share/shorin-niri"
-WALLPAPER_SRC_DIR="/usr/share/shorin-niri-wallpapers" # 新增壁纸来源目录
+WALLPAPER_SRC_DIR="/usr/share/shorin-niri-wallpapers"
 BASE_BACKUP_DIR="$HOME/.cache/shorin-niri-backup"
 BACKUP_DIR="$BASE_BACKUP_DIR/$(date +%Y%m%d_%H%M%S)"
 
@@ -92,8 +92,8 @@ manage_protection() {
     local action="$1"
     local target="$2"
     
-    mkdir -p "$(dirname "$USER_IGNORE_FILE")" 2>/dev/null
-    touch "$USER_IGNORE_FILE" 2>/dev/null
+    mkdir -p "$(dirname "$USER_IGNORE_FILE")"
+    touch "$USER_IGNORE_FILE"
     
     if [[ "$action" == "list" ]]; then
         info "$(_t "System protected paths (Hardcoded):" "系统内置保护路径 (硬编码):")"
@@ -124,14 +124,13 @@ manage_protection() {
     if [[ "$action" == "add" ]]; then
         if [[ ! -e "$TEMPLATE_DIR/$rel_path" ]]; then return; fi
         
-        if grep -Fxq "$rel_path" "$USER_IGNORE_FILE"; then
+        if grep -Fxq "$rel_path" "$USER_IGNORE_FILE" 2>/dev/null; then
             info "$(_t "Path is already protected." "该路径已在保护列表中。")"
         else
             echo "$rel_path" >> "$USER_IGNORE_FILE"
             ok "$(_t "Protected: ~/$rel_path" "已添加保护: ~/$rel_path")"
         fi
-        
-        elif [[ "$action" == "remove" ]]; then
+    elif [[ "$action" == "remove" ]]; then
         sed -i "\|^$rel_path$|d" "$USER_IGNORE_FILE" 2>/dev/null
         ok "$(_t "Unprotected: ~/$rel_path" "已取消保护: ~/$rel_path")"
     fi
@@ -148,12 +147,12 @@ backup_and_copy() {
     local dest_file="$HOME/$rel_path"
     local dest_dir="$(dirname "$dest_file")"
     
-    mkdir -p "$dest_dir" 2>/dev/null
+    mkdir -p "$dest_dir"
     
     if [[ -e "$dest_file" || -L "$dest_file" ]]; then
         local backup_file="$BACKUP_DIR/$rel_path"
-        mkdir -p "$(dirname "$backup_file")" 2>/dev/null
-        cp -a "$dest_file" "$backup_file" 2>/dev/null
+        mkdir -p "$(dirname "$backup_file")"
+        cp -a "$dest_file" "$backup_file"
         rm -f "$dest_file"
     fi
     cp -a "$src_file" "$dest_file"
@@ -221,8 +220,8 @@ hide_desktop_file() {
     local target_file="$user_dir/$filename"
     
     if [[ -f "$source_file" ]]; then
-        mkdir -p "$user_dir" 2>/dev/null
-        cp -f "$source_file" "$target_file" 2>/dev/null
+        mkdir -p "$user_dir"
+        cp -f "$source_file" "$target_file"
         if grep -q "^NoDisplay=" "$target_file" 2>/dev/null; then
             sed -i 's/^NoDisplay=.*/NoDisplay=true/' "$target_file"
         else
@@ -274,15 +273,15 @@ setup_system_environment() {
     
     if [ "$NEED_GENERATE" = true ]; then
         info "$(_t "Generating locales (this may take a few seconds)..." "正在生成 Locales (可能需要几秒钟)...")"
-        sudo locale-gen >/dev/null 2>&1
+        sudo locale-gen >/dev/null
         ok "$(_t "Locales generated successfully." "Locales 生成完成。")"
     fi
     
     info "$(_t "Enabling hardware services..." "正在配置底层硬件服务 (SwayOSD/i2c/Power)...")"
-    sudo systemctl enable --now power-profiles-daemon.service >/dev/null 2>&1
-    sudo systemctl enable --now swayosd-libinput-backend.service >/dev/null 2>&1
+    sudo systemctl enable --now power-profiles-daemon.service >/dev/null 2>&1 || true
+    sudo systemctl enable --now swayosd-libinput-backend.service >/dev/null 2>&1 || true
     
-    sudo gpasswd -a "$USER" i2c >/dev/null 2>&1
+    sudo gpasswd -a "$USER" i2c >/dev/null 2>&1 || true
     if ! grep -q "i2c-dev" /etc/modules-load.d/i2c-dev.conf 2>/dev/null; then
         echo "i2c-dev" | sudo tee /etc/modules-load.d/i2c-dev.conf >/dev/null
     fi
@@ -290,7 +289,7 @@ setup_system_environment() {
     
     info "$(_t "Configuring Firefox global policies (Pywalfox & uBlock)..." "正在配置 Firefox 全局策略 (Pywalfox & uBlock)...")"
     local POL_DIR="/etc/firefox/policies"
-    sudo mkdir -p "$POL_DIR" 2>/dev/null
+    sudo mkdir -p "$POL_DIR"
     sudo tee "$POL_DIR/policies.json" > /dev/null << 'EOF'
 {
   "policies": {
@@ -311,63 +310,63 @@ EOF
 apply_user_configs() {
     step "$(_t "Applying User Environment Settings" "正在应用用户环境设置")"
     
-    mkdir -p "$HOME/.config" 2>/dev/null
+    mkdir -p "$HOME/.config"
     if ! grep -q "kitty.desktop" "$HOME/.config/xdg-terminals.list" 2>/dev/null; then
         echo 'kitty.desktop' >> "$HOME/.config/xdg-terminals.list"
     fi
     
     if command -v gsettings >/dev/null 2>&1; then
-        gsettings set org.gnome.desktop.interface color-scheme "prefer-dark" >/dev/null 2>&1
-        gsettings set org.gnome.desktop.interface gtk-theme "adw-gtk3-dark" >/dev/null 2>&1
-        gsettings set com.github.stunkymonkey.nautilus-open-any-terminal terminal kitty >/dev/null 2>&1
-        gsettings set org.gnome.desktop.wm.preferences button-layout ":close" >/dev/null 2>&1
+        gsettings set org.gnome.desktop.interface color-scheme "prefer-dark" 2>/dev/null || true
+        gsettings set org.gnome.desktop.interface gtk-theme "adw-gtk3-dark" 2>/dev/null || true
+        gsettings set com.github.stunkymonkey.nautilus-open-any-terminal terminal kitty 2>/dev/null || true
+        gsettings set org.gnome.desktop.wm.preferences button-layout ":close" 2>/dev/null || true
     fi
     
     if [[ -f "$HOME/.config/gtk-3.0/bookmarks" ]]; then
-        sed -i "s/shorin/$USER/g" "$HOME/.config/gtk-3.0/bookmarks"
+        sed -i "s/shorin/$USER/g" "$HOME/.config/gtk-3.0/bookmarks" 2>/dev/null || true
     fi
     
     info "$(_t "Creating user templates..." "正在创建用户模板...")"
-    mkdir -p "$HOME/Templates" 2>/dev/null
+    mkdir -p "$HOME/Templates"
     touch "$HOME/Templates/new"
     echo '#!/usr/bin/env bash' > "$HOME/Templates/new.sh"
     chmod +x "$HOME/Templates/new.sh"
     
     if command -v flatpak >/dev/null 2>&1; then
-        flatpak override --user --filesystem=xdg-data/themes >/dev/null 2>&1
-        flatpak override --user --filesystem="$HOME/.themes" >/dev/null 2>&1
-        flatpak override --user --filesystem=xdg-config/gtk-4.0 >/dev/null 2>&1
-        flatpak override --user --filesystem=xdg-config/gtk-3.0 >/dev/null 2>&1
-        flatpak override --user --env=GTK_THEME=adw-gtk3-dark >/dev/null 2>&1
-        flatpak override --user --filesystem=xdg-config/fontconfig >/dev/null 2>&1
+        flatpak override --user --filesystem=xdg-data/themes 2>/dev/null || true
+        flatpak override --user --filesystem="$HOME/.themes" 2>/dev/null || true
+        flatpak override --user --filesystem=xdg-config/gtk-4.0 2>/dev/null || true
+        flatpak override --user --filesystem=xdg-config/gtk-3.0 2>/dev/null || true
+        flatpak override --user --env=GTK_THEME=adw-gtk3-dark 2>/dev/null || true
+        flatpak override --user --filesystem=xdg-config/fontconfig 2>/dev/null || true
     fi
     
-    mkdir -p "$HOME/.local/share" 2>/dev/null
-    ln -sfn /usr/share/themes "$HOME/.local/share/themes" 2>/dev/null
+    mkdir -p "$HOME/.local/share"
+    ln -sfn /usr/share/themes "$HOME/.local/share/themes"
     
-    mkdir -p "$HOME/.local/bin" 2>/dev/null
+    mkdir -p "$HOME/.local/bin"
     if command -v kitty >/dev/null 2>&1; then
-        ln -sfn /usr/bin/kitty "$HOME/.local/bin/xterm" 2>/dev/null
+        ln -sfn /usr/bin/kitty "$HOME/.local/bin/xterm"
     fi
     
     run_hide_desktop_file
 
     # ==========================================
-    # [新增] 部署默认壁纸，用于初始化 Matugen
+    # 部署默认壁纸 (修复了静默崩溃问题)
     # ==========================================
     if [[ -d "$WALLPAPER_SRC_DIR" ]]; then
         info "$(_t "Deploying default wallpapers..." "正在部署默认壁纸...")"
         local wp_dest="$HOME/Pictures/Wallpapers"
-        mkdir -p "$wp_dest" 2>/dev/null
-        # 复制壁纸并赋予正确权限 (即使存在也会覆盖同名模板)
-        cp -an "$WALLPAPER_SRC_DIR"/* "$wp_dest/" 2>/dev/null
+        mkdir -p "$wp_dest"
+        # 使用 /. 来拷贝文件夹内容，避免 * 导致空目录展开错误，并且不覆盖已有文件
+        cp -an "$WALLPAPER_SRC_DIR"/. "$wp_dest/" || true
     fi
     
     info "$(_t "Installing specific scripts & tools..." "正在安装特色脚本与占位文件...")"
-    shorin link >/dev/null 2>&1
-    curl -sL shorin.xyz/niri-blur-toggle | bash >/dev/null 2>&1
+    shorin link >/dev/null 2>&1 || true
+    curl -sL shorin.xyz/niri-blur-toggle | bash >/dev/null 2>&1 || true
     
-    mkdir -p "$HOME/.config/niri/dms" 2>/dev/null
+    mkdir -p "$HOME/.config/niri/dms"
     touch "$HOME/.config/niri/dms/colors.kdl"
     
     if [[ ! -f "$HOME/.config/niri/output.kdl" && -f "$HOME/.config/niri/output-example.kdl" ]]; then
@@ -400,8 +399,8 @@ remove_dotfiles() {
         
         if [[ -e "$dest_file" || -L "$dest_file" ]]; then
             local backup_file="$BACKUP_DIR/$rel_path"
-            mkdir -p "$(dirname "$backup_file")" 2>/dev/null
-            cp -a "$dest_file" "$backup_file" 2>/dev/null
+            mkdir -p "$(dirname "$backup_file")"
+            cp -a "$dest_file" "$backup_file"
             rm -f "$dest_file"
             ((removed_count++))
         fi
@@ -427,4 +426,25 @@ remove_dotfiles() {
     ok "$(_t "Cleanup complete! Removed $removed_count files." "清理完成！共精准移除了 $removed_count 个核心配置文件。")"
 }
 
-# =============
+# ==========================================
+# 4. 路由入口
+# ==========================================
+case "$1" in
+    init) sync_dotfiles "init"; setup_system_environment; apply_user_configs ;;
+    update) sync_dotfiles "update" ;;
+    remove) remove_dotfiles ;;
+    protect) manage_protection "add" "$2" ;;
+    unprotect) manage_protection "remove" "$2" ;;
+    protected-list) manage_protection "list" ;;
+    hide-icons) run_hide_desktop_file ;;
+    *)
+        echo -e "${C_BLU}Usage:${C_DEF} shorinniri {init|update|remove|protect|unprotect|protected-list|hide-icons}"
+        echo -e "  ${C_GRN}init${C_DEF}           - $(_t "First-time setup" "首次安装时运行 (环境初始化)")"
+        echo -e "  ${C_YEL}update${C_DEF}         - $(_t "Routine update" "日常更新使用 (同步最新配置)")"
+        echo -e "  ${C_RED}remove${C_DEF}         - $(_t "Uninstall/Cleanup" "卸载/清理 (精准移除管理配置)")"
+        echo -e "  ${C_CYA}protect <path>${C_DEF} - $(_t "Protect a config from updates" "保护指定的文件/目录不被更新覆盖")"
+        echo -e "  ${C_CYA}unprotect <path>${C_DEF} - $(_t "Remove protection" "取消对指定文件/目录的保护")"
+        echo -e "  ${C_CYA}protected-list${C_DEF} - $(_t "Show all protected paths" "查看当前所有受保护的路径")"
+        exit 1
+    ;;
+esac
