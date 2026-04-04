@@ -81,6 +81,7 @@ window-rule {
     match title="另存为"
     match app-id="better_control.py"
     match app-id="niri-hotkey-menu"
+    match app-id="io.github.fabrialberio.pinapp"
     open-floating true
 }
 // steam 好友列表
