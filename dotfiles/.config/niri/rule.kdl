@@ -82,6 +82,7 @@ window-rule {
     match app-id="better_control.py"
     match app-id="niri-hotkey-menu"
     match app-id="io.github.fabrialberio.pinapp"
+    match app-id="org.gnome.Calculator"
     open-floating true
 }
 // steam 好友列表
