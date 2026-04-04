@@ -40,7 +40,6 @@ WALL_DIR="$HOME/Pictures/Wallpapers"
 
 DEPENDENCIES=("magick" "notify-send")
 
-# 根据后端不同，动态检查依赖
 if [ "$WALLPAPER_BACKEND" == "awww" ]; then
     DEPENDENCIES+=("awww" "niri")
 elif [ "$WALLPAPER_BACKEND" == "swaybg" ]; then
@@ -54,45 +53,62 @@ for cmd in "${DEPENDENCIES[@]}"; do
     fi
 done
 
-INPUT_FILE="$1"
+# === 多显示器壁纸解析逻辑 ===
+declare -A MONITOR_WALLPAPERS
 
-# === 自动获取当前壁纸逻辑 ===
-if [ -z "$INPUT_FILE" ]; then
-    
-    # 策略 1: 尝试从 awww query 获取 (最准确，如果正在运行 awww)
+if [ -z "$1" ]; then
+    # 策略 1: 尝试从 awww query 获取多屏信息
     if command -v awww &> /dev/null && awww query &> /dev/null; then
-        INPUT_FILE=$(awww query | head -n1 | grep -oP 'image: \K.*')
+        while read -r line; do
+            # 匹配包含 image: 的行，提取显示器名和壁纸路径
+            if echo "$line" | grep -q "image:"; then
+                monitor=$(echo "$line" | cut -d':' -f2 | tr -d ' ')
+                img=$(echo "$line" | sed 's/.*image: //')
+                if [[ -n "$monitor" && -n "$img" ]]; then
+                    MONITOR_WALLPAPERS["$monitor"]="$img"
+                fi
+            fi
+        done < <(awww query 2>/dev/null)
     fi
 
-    # 策略 2: 如果上述都没拿到，且配置文件指向 waypaper，尝试读取 waypaper 配置
-    if [ -z "$INPUT_FILE" ] && [ -f "$WAYPAPER_CONFIG" ]; then
-        # 读取 ini 文件中的 wallpaper = /path/to/img 字段
-        # 使用 grep 和 cut 提取，xargs 去除空格
-        INPUT_FILE=$(grep "^wallpaper =" "$WAYPAPER_CONFIG" | cut -d '=' -f2 | xargs)
-        # 处理可能的波浪号 ~ 路径
-        INPUT_FILE="${INPUT_FILE/#\~/$HOME}"
+    # 策略 2: 如果上述没拿到(或未使用 awww)，尝试读取 waypaper 配置
+    if [ ${#MONITOR_WALLPAPERS[@]} -eq 0 ] && [ -f "$WAYPAPER_CONFIG" ]; then
+        tmp_img=$(grep "^wallpaper =" "$WAYPAPER_CONFIG" | cut -d '=' -f2 | xargs)
+        tmp_img="${tmp_img/#\~/$HOME}"
+        if [ -n "$tmp_img" ]; then
+            MONITOR_WALLPAPERS["all"]="$tmp_img"
+        fi
     fi
+else
+    # 策略 3: 用户手动指定参数，应用于所有显示器
+    MONITOR_WALLPAPERS["all"]="$1"
 fi
 
-if [ -z "$INPUT_FILE" ] || [ ! -f "$INPUT_FILE" ]; then
-    notify-send "Blur Error" "无法自动获取当前壁纸 (尝试了 awww query 和 waypaper config)。请手动指定路径。"
+if [ ${#MONITOR_WALLPAPERS[@]} -eq 0 ]; then
+    notify-send "Blur Error" "无法自动获取当前壁纸。请手动指定路径。"
     exit 1
 fi
 
+# 获取任意一个可用壁纸以推导目录
+FIRST_IMG=""
+for m in "${!MONITOR_WALLPAPERS[@]}"; do
+    FIRST_IMG="${MONITOR_WALLPAPERS[$m]}"
+    break
+done
+
 # 如果配置的 WALL_DIR 不存在，回退到当前图片所在目录
 if [ -z "$WALL_DIR" ] || [ ! -d "$WALL_DIR" ]; then
-    WALL_DIR=$(dirname "$INPUT_FILE")
+    WALL_DIR=$(dirname "$FIRST_IMG")
 fi
 
 # ==============================================================================
-# 3. 路径与链接逻辑
+# 3. 路径链接与壁纸处理逻辑
 # ==============================================================================
 
 REAL_CACHE_DIR="$REAL_CACHE_BASE/$CACHE_SUBDIR_NAME"
 mkdir -p "$REAL_CACHE_DIR"
 
-WALLPAPER_DIR=$(dirname "$INPUT_FILE")
-SYMLINK_PATH="$WALLPAPER_DIR/$LINK_NAME"
+SYMLINK_PATH="$WALL_DIR/$LINK_NAME"
 
 if [ ! -L "$SYMLINK_PATH" ] || [ "$(readlink -f "$SYMLINK_PATH")" != "$REAL_CACHE_DIR" ]; then
     if [ -d "$SYMLINK_PATH" ] && [ ! -L "$SYMLINK_PATH" ]; then
@@ -102,14 +118,45 @@ if [ ! -L "$SYMLINK_PATH" ] || [ "$(readlink -f "$SYMLINK_PATH")" != "$REAL_CACH
     fi
 fi
 
-FILENAME=$(basename "$INPUT_FILE")
 SAFE_OPACITY="${IMG_COLORIZE_STRENGTH%\%}"
 SAFE_COLOR="${IMG_FILL_COLOR#\#}"
 PARAM_PREFIX="blur-${IMG_BLUR_STRENGTH}-${SAFE_COLOR}-${SAFE_OPACITY}-"
 
-# 【修复画质的核心1】：强制在缓存文件名后追加 .jpg，让 ImageMagick 输出 24位 真彩色
-BLUR_FILENAME="${PARAM_PREFIX}${FILENAME}.jpg"
-FINAL_IMG_PATH="$REAL_CACHE_DIR/$BLUR_FILENAME"
+# 记录当前所有的缓存文件结果
+declare -A CACHE_PATHS
+declare -A ACTIVE_CACHE_FILES
+
+for monitor in "${!MONITOR_WALLPAPERS[@]}"; do
+    img_path="${MONITOR_WALLPAPERS[$monitor]}"
+    
+    if [ ! -f "$img_path" ]; then
+        continue
+    fi
+    
+    FILENAME=$(basename "$img_path")
+    BLUR_FILENAME="${PARAM_PREFIX}${FILENAME}.jpg"
+    FINAL_IMG_PATH="$REAL_CACHE_DIR/$BLUR_FILENAME"
+    
+    # 将此文件加入记录，用于后续应用和豁免清理
+    CACHE_PATHS["$monitor"]="$FINAL_IMG_PATH"
+    ACTIVE_CACHE_FILES["$FINAL_IMG_PATH"]=1
+    
+    # 若无缓存，生成当前壁纸
+    if [ ! -f "$FINAL_IMG_PATH" ]; then
+        if [[ -n "$IMG_FILL_COLOR" && -n "$IMG_COLORIZE_STRENGTH" ]]; then
+            magick "${img_path}[0]" -colorspace sRGB -blur "$IMG_BLUR_STRENGTH" -fill "$IMG_FILL_COLOR" -colorize "$IMG_COLORIZE_STRENGTH" "$FINAL_IMG_PATH"
+        else
+            magick "${img_path}[0]" -colorspace sRGB -blur "$IMG_BLUR_STRENGTH" "$FINAL_IMG_PATH"
+        fi
+        
+        if [ $? -ne 0 ]; then
+            notify-send "Blur Error" "ImageMagick 生成失败: $FILENAME"
+        fi
+    else
+        # 刷新访问时间
+        touch -a "$FINAL_IMG_PATH"
+    fi
+done
 
 # ==============================================================================
 # 4. 后台维护功能
@@ -119,41 +166,38 @@ log() { echo "[$(date '+%H:%M:%S')] $*"; }
 target_for() {
     local img="$1"
     local base="${img##*/}"
-    # 这里也要同步追加 .jpg
     echo "$REAL_CACHE_DIR/${PARAM_PREFIX}${base}.jpg"
 }
 
 run_maintenance_in_background() {
-    local current_img="$1"
-    local current_cache_target="$2"
-    
     (
         declare -A active_wallpapers
-        local whitelist_count=0
         
+        # 建立本地目录的白名单
         while IFS= read -r -d '' file; do
             local basename="${file##*/}"
             active_wallpapers["$basename"]=1
-            whitelist_count=$((whitelist_count + 1))
         done < <(find -L "$WALL_DIR" -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.gif' \) -print0)
 
         local orphan_list=$(mktemp)
         local orphan_count=0
         
+        # 寻找孤儿缓存文件
         while IFS= read -r -d '' cache_file; do
             local cache_name="${cache_file##*/}"
-            # 还原原始文件名 (去掉前缀和后来加的 .jpg)
             local original_name="${cache_name#${PARAM_PREFIX}}"
             original_name="${original_name%.jpg}"
             
+            # 如果原图不在目录中 且 该缓存未在当前屏幕上被使用
             if [[ -z "${active_wallpapers[$original_name]}" ]]; then
-                if [[ "$cache_file" != "$current_cache_target" ]]; then
+                if [[ -z "${ACTIVE_CACHE_FILES[$cache_file]}" ]]; then
                     echo "$cache_file" >> "$orphan_list"
                     orphan_count=$((orphan_count + 1))
                 fi
             fi
         done < <(find "$REAL_CACHE_DIR" -maxdepth 1 -name "${PARAM_PREFIX}*" -print0)
 
+        # 删减孤儿文件
         if [[ "$orphan_count" -gt "$ORPHAN_CACHE_LIMIT" ]]; then
             local delete_count=$((orphan_count - ORPHAN_CACHE_LIMIT))
             xargs -a "$orphan_list" ls -1tu | tail -n "$delete_count" | while read -r dead_file; do
@@ -162,19 +206,16 @@ run_maintenance_in_background() {
         fi
         rm -f "$orphan_list"
 
-        local total=0
+        # 预生成目录下的缓存
         while IFS= read -r -d '' img; do
-            [[ -n "$current_img" && "$img" == "$current_img" ]] && continue
-            
-            total=$((total + 1))
             local tgt
             tgt=$(target_for "$img")
 
-            if [[ -f "$tgt" ]]; then
+            # 如果已经被生成过（或是正在使用），则跳过
+            if [[ -f "$tgt" ]] || [[ -n "${ACTIVE_CACHE_FILES[$tgt]}" ]]; then
                 continue
             fi
 
-            # 【修复画质的核心2】：加入 -colorspace sRGB 确保脱离 GIF 的 256色 限制
             if [[ -n "$IMG_FILL_COLOR" && -n "$IMG_COLORIZE_STRENGTH" ]]; then
                 magick "${img}[0]" -colorspace sRGB -blur "$IMG_BLUR_STRENGTH" -fill "$IMG_FILL_COLOR" -colorize "$IMG_COLORIZE_STRENGTH" "$tgt"
             else
@@ -185,75 +226,60 @@ run_maintenance_in_background() {
 }
 
 # ==============================================================================
-# 5. 生成与应用函数
+# 5. 应用壁纸逻辑
 # ==============================================================================
 
-apply_wallpaper() {
-    local img_path="$1"
-    
-    touch -a "$img_path"
-
-    # 处理 awww 逻辑
+apply_wallpapers() {
     if [ "$WALLPAPER_BACKEND" == "awww" ]; then
         local daemon_name="awww-daemon"
         
-        # === 检测对应 daemon overview layer 是否存在 ===
         if ! niri msg layers | grep -q "${daemon_name}overview"; then
-            # 如果 layer 不存在，启动对应的 daemon
             $daemon_name -n overview &
-            # 等待一小会儿确保 socket 就绪
             sleep 0.5
         fi
         
-        # 应用壁纸
-        awww img $AWWW_ARGS "$img_path" &
+        # 遍历所有被指定的缓存进行设置
+        for monitor in "${!CACHE_PATHS[@]}"; do
+            img_path="${CACHE_PATHS[$monitor]}"
+            if [ "$monitor" == "all" ]; then
+                awww img $AWWW_ARGS "$img_path" &
+            else
+                awww img -o "$monitor" $AWWW_ARGS "$img_path" &
+            fi
+        done
         
     elif [ "$WALLPAPER_BACKEND" == "swaybg" ]; then
-        # Swaybg 逻辑
-        # 1. 检查 niri 的图层状态，如果发现任何 overview 正在运行
         if niri msg layers | grep -qE "(awww-daemonoverview)"; then
-            # 2. 杀掉对应的后台进程
             pkill -f "awww-daemon -n overview" || true
         fi
         
-        # 启动新的 swaybg 进程
-        swaybg -i "$img_path" -m "$SWAYBG_MODE" &
+        # 构造多显示器的 swaybg 参数 (比如: swaybg -o DP-1 -i img1 -o DP-2 -i img2 ...)
+        swaybg_args=()
+        for monitor in "${!CACHE_PATHS[@]}"; do
+            img_path="${CACHE_PATHS[$monitor]}"
+            if [ "$monitor" != "all" ]; then
+                swaybg_args+=("-o" "$monitor")
+            fi
+            swaybg_args+=("-i" "$img_path" "-m" "$SWAYBG_MODE")
+        done
+        
+        swaybg "${swaybg_args[@]}" &
     fi
 }
 
 # ==============================================================================
-# 6. 主逻辑
+# 6. 执行与触发
 # ==============================================================================
 
-# 若缓存命中
-if [ -f "$FINAL_IMG_PATH" ]; then
-    apply_wallpaper "$FINAL_IMG_PATH"
-
-    if [[ "$AUTO_PREGEN" == "true" ]]; then
-        run_maintenance_in_background "$INPUT_FILE" "$FINAL_IMG_PATH"
-    fi
-    exit 0
-fi
-
-# 若无缓存，生成当前壁纸
-# 【修复画质的核心2】：加入 -colorspace sRGB 确保脱离 GIF 的 256色 限制
-if [[ -n "$IMG_FILL_COLOR" && -n "$IMG_COLORIZE_STRENGTH" ]]; then
-    magick "${INPUT_FILE}[0]" -colorspace sRGB -blur "$IMG_BLUR_STRENGTH" -fill "$IMG_FILL_COLOR" -colorize "$IMG_COLORIZE_STRENGTH" "$FINAL_IMG_PATH"
-else
-    magick "${INPUT_FILE}[0]" -colorspace sRGB -blur "$IMG_BLUR_STRENGTH" "$FINAL_IMG_PATH"
-fi
-
-if [ $? -ne 0 ]; then
-    notify-send "Blur Error" "ImageMagick 生成失败"
+if [ ${#CACHE_PATHS[@]} -eq 0 ]; then
+    notify-send "Blur Error" "未找到需要应用的壁纸文件"
     exit 1
 fi
 
-# 应用壁纸
-apply_wallpaper "$FINAL_IMG_PATH"
+apply_wallpapers
 
-# 后台运行维护
 if [[ "$AUTO_PREGEN" == "true" ]]; then
-    run_maintenance_in_background "$INPUT_FILE" "$FINAL_IMG_PATH"
+    run_maintenance_in_background
 fi
 
 exit 0
