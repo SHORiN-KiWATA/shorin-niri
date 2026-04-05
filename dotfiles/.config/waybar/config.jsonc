@@ -15,7 +15,7 @@
         // "ext/workspaces",
         "niri/workspaces",
         "custom/right_div#5",
-        "cffi/niri-taskbar",
+        //"cffi/niri-taskbar", //需要安装waybar-niri-taskbar-git
         "niri/window",
         //"dwl/window",
         // "hyprland/window",

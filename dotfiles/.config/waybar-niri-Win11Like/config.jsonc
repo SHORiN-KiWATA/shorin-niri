@@ -21,9 +21,9 @@
         "niri/window",
     ],
     "modules-center": [
-        "custom/applauncher",
+        "custom/applauncher"
         //"custom/separator#2",
-        "cffi/niri-taskbar",
+        //"cffi/niri-taskbar", //需要安装waybar-niri-taskbar-git
     ],
     "modules-right": [
         "custom/updates",
