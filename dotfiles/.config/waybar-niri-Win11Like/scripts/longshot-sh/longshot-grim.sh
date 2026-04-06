@@ -2,15 +2,15 @@
 
 # =================语言=================
 if env | grep -q "zh_CN"; then
-    STR_NEXT="📸 截取下一张 (仅需定高度)"
-    STR_FINISH="💾 完成并处理"
-    STR_ABORT="❌ 放弃"
+    STR_NEXT="截取下一张 (仅需定高度)"
+    STR_FINISH="完成并处理"
+    STR_ABORT="放弃"
     STR_ERR="错误"
     STR_SAVED="已保存"
 else
-    STR_NEXT="📸 Capture Next (Height only)"
-    STR_FINISH="💾 Finish"
-    STR_ABORT="❌ Abort"
+    STR_NEXT="Capture Next (Height only)"
+    STR_FINISH="Finish"
+    STR_ABORT="Abort"
     STR_ERR="Error"
     STR_SAVED="Saved"
 fi
