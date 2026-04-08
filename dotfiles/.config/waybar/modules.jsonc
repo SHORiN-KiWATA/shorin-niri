@@ -143,8 +143,8 @@
     //"interval": 1,                 // 每秒刷新一次
     "signal": 9, // 与脚本里的 WAYBAR_SIG 对应
     "tooltip": true,
-    "on-click": "~/.config/waybar/scripts/screenrec toggle", // 左键：开始/停止
-    "on-click-right": "~/.config/waybar/scripts/screenrec stop"
+    "on-click": "shorin-screenrec-menu toggle", // 左键：开始/停止
+    "on-click-right": "shorin-screenrec-menu stop"
   },
   //声音模块
   "group/audio": {
