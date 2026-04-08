@@ -83,6 +83,7 @@ window-rule {
     match app-id="niri-hotkey-menu"
     match app-id="io.github.fabrialberio.pinapp"
     match app-id="org.gnome.Calculator"
+    match app-id="floating-mpv"
     open-floating true
 }
 // steam 好友列表
