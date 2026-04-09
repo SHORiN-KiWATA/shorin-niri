@@ -56,7 +56,7 @@ TARGET_SOFTWARE=(
     "wlsunset" "pavucontrol" "downgrade" "strace" "xdg-terminal-exec" "kitty" "firefox"
     "fastfetch" "btop" "gdu" "opencode"
     # --- AUR Specific Packages ---
-    "shorin-contrib-git" "clipsync-git" "ddcutil-service" "python-pywalfox"
+    "shorin-contrib-git" "ddcutil-service" "python-pywalfox"
     "waypaper-git" "niri-sidebar-git" "wl-longshot-git" "shorin-screenrec-menu-git"
     # --- Input Method ---
     "fcitx5" "fcitx5-configtool" "fcitx5-gtk" "fcitx5-qt" "fcitx5-rime" "rime-ice-git" "rime-wubi"

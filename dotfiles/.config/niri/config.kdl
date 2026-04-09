@@ -198,7 +198,7 @@ spawn-at-startup "fcitx5"
 	//cliphist
 spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
 	// wayland <--> x11 剪贴板同步 这个包是我自己推的clipsync-git
-//spawn-at-startup "systemctl" "--user" "start" "clipsync"
+spawn-at-startup "systemctl" "--user" "start" "clipsync"
 // 闲置时自动熄屏锁屏睡眠的脚本，说实话这东西毫无用处，super+alt+P可以熄屏休眠
 // spawn-at-startup "~/.config/niri/scripts/swayidle.sh"
 // 大写锁定键的osd显示
