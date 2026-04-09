@@ -8,6 +8,8 @@ Shorin一键配置脚本: https://shorin.xyz/wiki/archsetup
 【重要工具】
 shorinniri命令可以对shorinniri桌面进行init初始化、update更新、remove移除等操作，操作前都会备份配置文件到.cache下，如果你有东西被意外覆盖可以去找回。详情看shorinniri命令的帮助信息。
 
+【Ai助手】
+有一个叫作opencode的开源ai助手，默认键位是Mod+Alt+O（英文字母O），有免费模型可以用。如果有查找文件、查询系统信息之类的简单的需求直接询问这个Ai助手。PS: 谨慎使用ai修改文件。
 
 【重要按键】
 super+shift+/ 打开按键教程
@@ -40,16 +42,12 @@ f4可以打开菜单。如果出现卡A的情况可以试试按右shift解决。
 
 【实用命令】
 pac 安装软件 (安装软件还可以用bazaar，这是flatpak软件商城)
-pacr 卸载软件（因为暂时没拆分aur依赖，所以想删除桌面依赖的软件要用-Rdd无视依赖关系删除，可能会有风险，谨慎使用。）
+pacr 卸载软件（因为暂时没拆分aur依赖，所以想删除桌面依赖的软件要用-Rddns无视依赖关系删除，可能会有风险，谨慎使用。）
 mirror-update 更新镜像源
 sysup 更新系统
 clean 系统清理
 quicksave 快速存档
 运行shorin命令可以看到所有可用的便利命令
-
-【Ai助手】
-有一个叫作opencode的开源ai助手，默认键位是Mod+Alt+O（英文字母O），有免费模型可以用。如果有查找文件、查询系统信息之类的简单的需求直接询问这个Ai助手。PS: 谨慎使用ai修改文件。
-
 
 【有趣实用的TUI软件（基于终端的用户交互程序）】
 命令：作用
