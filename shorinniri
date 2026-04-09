@@ -299,7 +299,7 @@ hide_desktop_file() {
 
 run_hide_desktop_file() {
     local apps_to_hide=(
-        "avahi-discover.desktop" "qv4l2.desktop" "qvidcap.desktop" "bssh.desktop" "org.fcitx.Fcitx5.desktop"
+        "lstopo.desktop" "avahi-discover.desktop" "qv4l2.desktop" "qvidcap.desktop" "bssh.desktop" "org.fcitx.Fcitx5.desktop"
         "org.fcitx.fcitx5-migrator.desktop" "xgps.desktop" "xgpsspeed.desktop" "gvim.desktop" "kbd-layout-viewer5.desktop"
         "bvnc.desktop" "yazi.desktop" "btop.desktop" "vim.desktop" "nvim.desktop" "nvtop.desktop" "mpv.desktop"
         "org.gnome.Settings.desktop" "thunar-settings.desktop" "thunar-bulk-rename.desktop" "thunar-volman-settings.desktop"
