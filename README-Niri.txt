@@ -50,7 +50,7 @@ quicksave 快速存档
 运行shorin命令可以看到所有可用的便利命令
 
 【窗口背景模糊（blur）】
-blur相关的设置在.config/niri/rule.kdl里。不喜欢可以自己调整。
+blur相关的设置在.config/niri/blur.kdl里。不喜欢可以自己调整。
 
 【有趣实用的TUI软件（基于终端的用户交互程序）】
 命令：作用
