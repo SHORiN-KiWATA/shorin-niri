@@ -29,7 +29,7 @@ binds {
     Mod+F5 hotkey-overlay-title="快速存档 Quick save" {spawn "quicksave";}
     Mod+F8 hotkey-overlay-title="快速读档 Quick load" {spawn "quickload";}
     Mod+F9 hotkey-overlay-title="切换护眼模式 Toggle sunset" {spawn "~/.local/bin/toggle-wlsunset";}
-    Mod+F12 hotkey-overlay-title="截取所有显示器 Screenshot All Monitor"  {spawn-sh  "grim - | satty -f - & pw-play /usr/share/sounds/freedesktop/stereo/camera-shutter.oga ";}
+    Mod+F12 hotkey-overlay-title="截取所有显示器 Screenshot All Monitor"  {spawn-sh "grim - | wl-copy & pw-play /usr/share/sounds/freedesktop/stereo/camera-shutter.oga ";}
 
     // niri-sidebar扩展相关
     // 警告：这是实验性功能
