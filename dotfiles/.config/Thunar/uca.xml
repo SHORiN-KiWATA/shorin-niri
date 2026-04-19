@@ -120,4 +120,15 @@ for line in sys.stdin:
 	<text-files/>
 	<video-files/>
 </action>
+<action>
+	<icon></icon>
+	<name>在此处打开VSCode</name>
+	<submenu></submenu>
+	<unique-id>1776582964937744-1</unique-id>
+	<command>code %d</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<directories/>
+</action>
 </actions>
