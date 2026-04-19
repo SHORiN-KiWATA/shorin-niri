@@ -34,8 +34,11 @@ binds {
     Mod+F8 hotkey-overlay-title="快速读档 Quick load" {spawn "quickload";}
     Mod+F12 hotkey-overlay-title="截取所有显示器 Screenshot All Monitor"  {spawn-sh "grim - | wl-copy & pw-play /usr/share/sounds/freedesktop/stereo/camera-shutter.oga ";}
 
-    // 一下功能需要安装nirius并启动niriusd
-    //Mod+G hotkey-overlay-title="切换工作区时自动跟随 Follow when switch workspaces" {spawn-sh "nirius toggle-follow-mode" ;} 
+    // 以下功能需要安装nirius并启动niriusd
+    //Mod+G hotkey-overlay-title="切换工作区时自动跟随 Follow when switch workspaces" {spawn "nirius" "toggle-follow-mode" ;} 
+    //Mod+Shift+Q hotkey-overlay-title="快速聚焦到QQ Quick focus QQ" {spawn "nirius" "focus" "--app-id" "QQ" ;} 
+    //Mod+Shift+W hotkey-overlay-title="快速聚焦到微信 Quick focus Wechat" {spawn "nirius" "focus" "--app-id" "wechat" ;} 
+
     
 
     // niri-sidebar扩展相关
