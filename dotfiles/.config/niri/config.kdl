@@ -8,7 +8,7 @@
 // 自25.11版本起，niri的配置文件支持了拆分，每一条include都代表把已经拆分出去的配置文件嵌入进来。
 include "binds.kdl"
 include "rule.kdl"
-include "output.kdl"
+include optional=true "output.kdl"
 include "animations.kdl"
 include "layout.kdl"
 // 截图保存位置
@@ -215,6 +215,8 @@ spawn-at-startup "~/.local/bin/niri-sidebar" "listen"
 spawn-at-startup "xhost" "+si:localuser:root"
 // 音频调整程序，easyeffects，-w可以在后台启动
 //spawn-at-startup "flatpak" "run" "com.github.wwmm.easyeffects" "-w"
+// nirius
+spawn-at-startup "niriusd"
 
 // 取消启动niri时自动开启快捷键教程
 hotkey-overlay {
