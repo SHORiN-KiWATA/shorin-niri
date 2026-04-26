@@ -3,6 +3,7 @@
 # --- 1. 参数解析 ---
 WALLPAPER=""
 NO_INDEX=false
+FORCE_UPDATE=false # 【新增】：强制更新标志
 
 show_help() {
     echo "Usage: matugen-update.sh [OPTIONS] [WALLPAPER]"
@@ -10,6 +11,7 @@ show_help() {
     echo "Options:"
     echo "  -h, --help       显示此帮助信息"
     echo "  -n, --no-index   不指定 index，在终端运行时唤起 matugen 原生的交互式颜色选择"
+    echo "  -f, --force      强制重新生成，忽略壁纸未更改的检查" # 【新增】
     exit 0
 }
 
@@ -20,6 +22,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -n|--no-index)
             NO_INDEX=true
+            shift
+            ;;
+        -f|--force)          # 【新增】：捕获强制更新参数
+            FORCE_UPDATE=true
             shift
             ;;
         *)
@@ -65,7 +71,7 @@ if [ -z "$WALLPAPER" ]; then
     fi
     
     # Fallback 降级方案：读取 waypaper 配置文件
-    if [ -z "$WALLPAPER" ] && [ -f "$WAYPAPER_CONFIG" ]; then
+    if [ -z "$WALLPAPER" ] &&[ -f "$WAYPAPER_CONFIG" ]; then
         WP_PATH=$(sed -n 's/^wallpaper[[:space:]]*=[[:space:]]*//p' "$WAYPAPER_CONFIG")
         WP_PATH="${WP_PATH/#\~/$HOME}"
         if [ -n "$WP_PATH" ] && [ -f "$WP_PATH" ]; then
@@ -92,15 +98,15 @@ if [ -f "$INDEX_MODE_FILE" ]; then
     fi
 fi
 
-# [新增逻辑]：检测下一次传入的壁纸路径是否和上一次相同
+#[新增逻辑]：检测下一次传入的壁纸路径是否和上一次相同
 if [ -f "$LAST_PROCESSED_WALL_FILE" ]; then
     LAST_PROCESSED_WALL=$(cat "$LAST_PROCESSED_WALL_FILE")
 else
     LAST_PROCESSED_WALL=""
 fi
 
-# 如果壁纸没变，且当前处于静默固定模式（非 random 轮换模式，也非手动 -n 唤出），则直接退出，节省性能
-if [ "$WALLPAPER" == "$LAST_PROCESSED_WALL" ] && [ "$FORCE_ZERO" = true ] && [ "$NO_INDEX" = false ]; then
+# 【修改】：加入了 FORCE_UPDATE=false 的判断。如果传入了 -f 参数，将无视壁纸是否相同，强制生成
+if [ "$FORCE_UPDATE" = false ] &&[ "$WALLPAPER" == "$LAST_PROCESSED_WALL" ] && [ "$FORCE_ZERO" = true ] &&[ "$NO_INDEX" = false ]; then
     echo "Wallpaper unchanged for the focused monitor. Skipping Matugen update."
     exit 0
 fi
@@ -154,7 +160,7 @@ else
         SELECTED_INDEX=0
     else
         # 判断：如果探测缓存都存在，直接走“光速轮换”
-        if [ "$LAST_WALL" == "$WALLPAPER" ] && [ -f "$VALID_INDICES_FILE" ] && [ -f "$CURRENT_INDEX_FILE" ]; then
+        if [ "$LAST_WALL" == "$WALLPAPER" ] && [ -f "$VALID_INDICES_FILE" ] &&[ -f "$CURRENT_INDEX_FILE" ]; then
             
             read -r -a VALID_INDICES < "$VALID_INDICES_FILE"
             LAST_INDEX=$(cat "$CURRENT_INDEX_FILE")

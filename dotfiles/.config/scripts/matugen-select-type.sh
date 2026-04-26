@@ -143,34 +143,11 @@ if [ -n "$REAL_VALUE" ]; then
     # 发送通知
     notify-send "Matugen" "$NOTIFY_MSG"
 
-    # 获取壁纸路径
-    CURRENT_WALLPAPER=""
-    if command -v swww &>/dev/null && pgrep -x "swww-daemon" >/dev/null; then
-        WP_SWWW=$(swww query | head -n 1 | awk -F ': ' '{print $2}' | awk '{print $1}')
-        if [ -n "$WP_SWWW" ] && [ -f "$WP_SWWW" ]; then
-            CURRENT_WALLPAPER="$WP_SWWW"
-        fi
-    fi
-    if [ -z "$CURRENT_WALLPAPER" ] && [ -f "$WAYPAPER_CONFIG" ]; then
-        WP_CONF=$(sed -n 's/^wallpaper[[:space:]]*=[[:space:]]*//p' "$WAYPAPER_CONFIG")
-        WP_CONF="${WP_CONF/#\~/$HOME}"
-        if [ -f "$WP_CONF" ]; then
-            CURRENT_WALLPAPER="$WP_CONF"
-        fi
-    fi
-
-    # 立即刷新
-    if [ -n "$CURRENT_WALLPAPER" ]; then
-        if [ -x "$UPDATE_SCRIPT" ]; then
-            "$UPDATE_SCRIPT" "$CURRENT_WALLPAPER"
-        else
-            notify-send "Error" "脚本未找到: $UPDATE_SCRIPT"
-        fi
+    # 【修改】：直接调用带有 -f 参数的更新脚本。
+    # 这样可以让 update.sh 自己去走那套完善的 awww + niri 的多显示器逻辑，更加安全精确。
+    if [ -x "$UPDATE_SCRIPT" ]; then
+        "$UPDATE_SCRIPT" -f
     else
-        if [ "$IS_CN" = true ]; then
-            notify-send "Matugen" "设置已保存，但无法获取壁纸路径。"
-        else
-            notify-send "Matugen" "Settings saved, but wallpaper path not found."
-        fi
+        notify-send "Error" "脚本未找到: $UPDATE_SCRIPT"
     fi
 fi
