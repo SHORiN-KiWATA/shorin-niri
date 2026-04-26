@@ -73,7 +73,7 @@ binds {
     Mod+Z hotkey-overlay-title="程序菜单 Applauncher" { spawn "fuzzel"; }
     // 锁屏
     Mod+Alt+L hotkey-overlay-title="锁屏 Lock screen" { spawn-sh "hyprlock -c ~/.config/niri/hyprlock.conf"; } 
-    Mod+P hotkey-overlay-title="提取窗口信息 Pick information" { spawn "~/.config/niri/scripts/niri-pick" "menu"; }
+    Mod+P hotkey-overlay-title="提取窗口信息 Pick information" { spawn "~/.config/niri/scripts/niri-pick" "focus"; }
     //Mod+Alt+V  hotkey-overlay-title="剪贴板 Clipboard" {spawn-sh "copyq toggle || ~/.local/bin/clipse-gui || kitty --class clipse --single-instance -e clipse";}
     // 这是我自己的剪贴板程序，对应aur包cliphist-tui-git
     Mod+Alt+V hotkey-overlay-title="剪贴板 Clipboard" {spawn-sh "kitty --single-instance --class cliphist-tui -e cliphist-tui";} // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
