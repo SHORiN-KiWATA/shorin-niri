@@ -73,7 +73,7 @@ binds {
     Mod+Z hotkey-overlay-title="程序菜单 Applauncher" { spawn "fuzzel"; }
     // 锁屏
     Mod+Alt+L hotkey-overlay-title="锁屏 Lock screen" { spawn-sh "hyprlock -c ~/.config/niri/hyprlock.conf"; } 
-    Mod+P hotkey-overlay-title=null { spawn-sh "hyprpicker -a && pw-play /usr/share/sounds/freedesktop/stereo/message.oga"; }
+    Mod+P hotkey-overlay-title="提取窗口信息 Pick information" { spawn "~/.config/niri/scripts/niri-pick" "menu"; }
     //Mod+Alt+V  hotkey-overlay-title="剪贴板 Clipboard" {spawn-sh "copyq toggle || ~/.local/bin/clipse-gui || kitty --class clipse --single-instance -e clipse";}
     // 这是我自己的剪贴板程序，对应aur包cliphist-tui-git
     Mod+Alt+V hotkey-overlay-title="剪贴板 Clipboard" {spawn-sh "kitty --single-instance --class cliphist-tui -e cliphist-tui";} // Use spawn-sh to run a shell command. Do this if you need pipes, multiple commands, etc.
@@ -412,12 +412,10 @@ binds {
     Mod+Escape allow-inhibiting=false { toggle-keyboard-shortcuts-inhibit; }
 
     // The quit action will show a confirmation dialog to avoid accidental exits.
-    Mod+Shift+Ctrl+Q hotkey-overlay-title=null { spawn "wlogout"; } 
     Mod+Shift+E hotkey-overlay-title="退出niri Quit niri" { quit; }
-    Ctrl+Alt+Delete hotkey-overlay-title="电源菜单 Powermenu" { spawn "wlogout"; }
     // Powers off the monitors. To turn them back on, do any input like
 
     // moving the mouse or pressing any other key.
-    Mod+Alt+P  hotkey-overlay-title="休眠 Turn off monitors" { spawn-sh "niri msg action power-off-monitors && hyprlock -c ~/.config/niri/hyprlock.conf && systemctl suspend"; }
+    Mod+Shift+P  hotkey-overlay-title="电源菜单 powermenu" { spawn "~/.config/niri/scripts/powermenu"; }
 
 }
