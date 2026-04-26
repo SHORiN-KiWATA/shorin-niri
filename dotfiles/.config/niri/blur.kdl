@@ -34,10 +34,11 @@ layer-rule {
 window-rule {
     match app-id="thunar"
     match app-id="Nautilus"
+    opacity 0.95
 
     popups {
         geometry-corner-radius 15
-        opacity 0.95
+        opacity 0.9
         background-effect {
             blur true
 	    xray false
