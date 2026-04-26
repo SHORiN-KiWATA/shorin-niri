@@ -382,7 +382,7 @@
     },
     "exec": "~/.config/waybar/scripts/check-updates.sh",
     "restart-interval": 0,
-    "on-click": "kitty -e sysup",
+    "on-click": "kitty -e shorin sysup",
     "on-click-middle": "pkill -SIGUSR1 -f ~/.config/waybar/scripts/check-updates.sh",
     "on-click-right": "kitty --class floating-term  -e shorin checkallupdates" 
   },
