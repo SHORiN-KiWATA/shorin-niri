@@ -14,7 +14,7 @@ window-rule {
     // 这一行规则可以让niri变成传统桌面那样的堆叠式桌面。
     //open-floating true
     // 全局透明度
-    opacity 0.95
+    opacity 0.97
     // 圆角
     geometry-corner-radius 8
     // 去掉超出圆角的窗口内容
@@ -35,6 +35,7 @@ window-rule {
 window-rule {
     match app-id="mpv"
     match app-id="celluloid"
+    match app-id="virt-manager"
     opacity 1.0 
 }
 
