@@ -5,7 +5,7 @@ if [[ "$LANG" == zh_* ]]; then
     OPT_LOCK="锁屏"
     OPT_SCREEN_OFF="关闭屏幕"
     OPT_QUIT="退出"
-    OPT_SUSPEND="休眠"
+    OPT_SUSPEND="挂起"
     OPT_REBOOT="重启"
     OPT_POWEROFF="关机"
 else
