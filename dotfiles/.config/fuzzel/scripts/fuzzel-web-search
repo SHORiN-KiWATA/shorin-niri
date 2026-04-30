@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# 1. 如果是从菜单中选中正常桌面应用，直接运行
+if [ -n "$FUZZEL_DESKTOP_FILE_ID" ] || [ -n "$DESKTOP_ENTRY_ID" ]; then
+    exec "$@"
+fi
+
+# 2. 获取你输入的所有字符
+INPUT="$*"
+
+# ==========================================
+# 时区检测与默认搜索引擎设置
+# ==========================================
+DEFAULT_ENGINE="https://www.google.com/search?q=" # 先假定为 Google
+
+# 尝试获取当前系统的时区设置
+# 优先使用现代 Linux 标准的 timedatectl，如果不支持则读取 /etc/localtime 软链接
+if command -v timedatectl >/dev/null 2>&1; then
+    TZ=$(timedatectl show --property=Timezone --value 2>/dev/null)
+elif [ -L /etc/localtime ]; then
+    TZ=$(readlink /etc/localtime)
+else
+    TZ=$(cat /etc/timezone 2>/dev/null)
+fi
+
+# 如果时区包含 Asia/Shanghai (中国大陆标准时区)，则将默认引擎切换为 Bing
+if [[ "$TZ" == *"Asia/Shanghai"* ]]; then
+    DEFAULT_ENGINE="https://www.bing.com/search?q="
+fi
+
+# ==========================================
+# 解析智能前缀 (使用 Bash 正则表达式)
+# ==========================================
+if [[ "$INPUT" =~ ^g[[:space:]]+(.*) ]]; then
+    SEARCH_URL="https://www.google.com/search?q="
+    QUERY="${BASH_REMATCH[1]}"
+
+elif [[ "$INPUT" =~ ^bili[[:space:]]+(.*) ]]; then
+    SEARCH_URL="https://search.bilibili.com/all?keyword="
+    QUERY="${BASH_REMATCH[1]}"
+
+elif [[ "$INPUT" =~ ^yt[[:space:]]+(.*) ]]; then
+    SEARCH_URL="https://www.youtube.com/results?search_query="
+    QUERY="${BASH_REMATCH[1]}"
+
+elif [[ "$INPUT" =~ ^b[[:space:]]+(.*) ]]; then
+    SEARCH_URL="https://www.bing.com/search?q="
+    QUERY="${BASH_REMATCH[1]}"
+
+elif [[ "$INPUT" =~ ^gh[[:space:]]+(.*) ]]; then
+    SEARCH_URL="https://github.com/search?q="
+    QUERY="${BASH_REMATCH[1]}"
+
+else
+    # 没有匹配到前缀，使用根据时区判断出的默认搜索引擎
+    SEARCH_URL="$DEFAULT_ENGINE"
+    QUERY="$INPUT"
+fi
+
+# 3. 对提取出的查询词进行 URL 编码
+query_encoded=$(python3 -c "import urllib.parse, sys; print(urllib.parse.quote(sys.argv[1]))" "$QUERY")
+
+# 4. 拼接 URL 并调用浏览器
+exec xdg-open "${SEARCH_URL}${query_encoded}"
