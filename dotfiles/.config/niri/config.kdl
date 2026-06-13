@@ -244,8 +244,8 @@ magnifier {
 
 grid-overview {
     gap 20
-    padding 80
-    focused-column-scale 1.04
+    padding 20
+    focused-column-scale 1.02
 }
 
 
