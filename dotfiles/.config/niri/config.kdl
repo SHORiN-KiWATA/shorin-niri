@@ -46,11 +46,11 @@ cursor {
     hide-after-inactive-ms 15000
     shake-to-enlarge {
 	//off
-	grow
+	//grow
 	grow-speed 0.01
         threshold 2000
 	hold-duration-ms 1500
-	zoom-factor 5
+	zoom-factor 7
     }
 }
  
