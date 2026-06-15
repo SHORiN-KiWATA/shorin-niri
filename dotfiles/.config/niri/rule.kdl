@@ -106,6 +106,8 @@ window-rule {
     match app-id="org.gnome.Calculator"
     match app-id="floating-mpv"
     match app-id="thunar"
+    match app-id="one.alynx.showmethekey"
+    match app-id="io.github.shorin.proton_wrapper_select"
     open-floating true
 }
 // 开启后不聚焦的窗口
@@ -207,16 +209,12 @@ window-rule {
     match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
     default-floating-position x=10 y=10 relative-to="bottom-right"
     open-focused false
-    ignore-grid-overview true
 }
 
+// 忽略grid
 window-rule {
+    match app-id="steam"
+    match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
     match app-id="one.alynx.showmethekey"
-    open-floating true
     ignore-grid-overview true
-    background-effect {
-        xray false
-        blur false
-    }
 }
-
