@@ -210,3 +210,13 @@ window-rule {
     ignore-grid-overview true
 }
 
+window-rule {
+    match app-id="one.alynx.showmethekey"
+    open-floating true
+    ignore-grid-overview true
+    background-effect {
+        xray false
+        blur false
+    }
+}
+

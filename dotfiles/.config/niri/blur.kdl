@@ -45,5 +45,12 @@ window-rule {
         }
     }
 }
+window-rule {
+    match app-id="one.alynx.showmethekey"
+    background-effect {
+        xray false
+        blur false
+    }
+}
 // --- NIRI BLUR END ---
 
