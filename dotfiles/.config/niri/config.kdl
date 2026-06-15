@@ -173,7 +173,7 @@ overview {
 	//off
 	}
 	//缩放
-	zoom 0.5
+	zoom 0.55
 }
 // Add lines like this to spawn processes at startup.
 // Note that running niri as a session supports xdg-desktop-autostart,
@@ -244,8 +244,9 @@ magnifier {
 
 grid-overview {
     gap 20
-    padding 20
-    focused-column-scale 1.02
+    padding 60
+    focused-column-scale 1.04
+    grid-all-monitors true
 }
 
 
