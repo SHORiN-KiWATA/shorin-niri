@@ -244,7 +244,7 @@ magnifier {
 
 grid-overview {
     gap 20
-    padding 60
+    padding 80
     focused-column-scale 1.04
     grid-all-monitors true
 }
