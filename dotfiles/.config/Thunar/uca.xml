@@ -115,7 +115,7 @@ for line in sys.stdin:
 	<name>压缩视频大小</name>
 	<submenu></submenu>
 	<unique-id>1770021157399945-1</unique-id>
-	<command>kitty --class floating-term compressvideos -p %F</command>
+	<command>kitty --class floating-term compressvideos -q 2 -p %F</command>
 	<description></description>
 	<range>*</range>
 	<patterns>*</patterns>
@@ -162,5 +162,16 @@ for line in sys.stdin:
 	<other-files/>
 	<text-files/>
 	<video-files/>
+</action>
+<action>
+	<icon></icon>
+	<name>在此处打开Opencode</name>
+	<submenu></submenu>
+	<unique-id>1781935851199454-1</unique-id>
+	<command>xdg-terminal-exec -- opencode %d</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<directories/>
 </action>
 </actions>
