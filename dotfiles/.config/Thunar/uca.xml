@@ -168,7 +168,7 @@ for line in sys.stdin:
 	<name>在此处打开Opencode</name>
 	<submenu></submenu>
 	<unique-id>1781935851199454-1</unique-id>
-	<command>xdg-terminal-exec -- opencode %d</command>
+	<command>xdg-terminal-exec -- opencode %f</command>
 	<description></description>
 	<range>*</range>
 	<patterns>*</patterns>
