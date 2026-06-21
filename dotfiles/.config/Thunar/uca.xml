@@ -138,17 +138,6 @@ for line in sys.stdin:
 </action>
 <action>
 	<icon></icon>
-	<name>在此处打开VSCode</name>
-	<submenu></submenu>
-	<unique-id>1776582964937744-1</unique-id>
-	<command>code %F</command>
-	<description></description>
-	<range>*</range>
-	<patterns>*</patterns>
-	<directories/>
-</action>
-<action>
-	<icon></icon>
 	<name>获取所有权</name>
 	<submenu></submenu>
 	<unique-id>1777472832087395-1</unique-id>
@@ -162,6 +151,17 @@ for line in sys.stdin:
 	<other-files/>
 	<text-files/>
 	<video-files/>
+</action>
+<action>
+	<icon></icon>
+	<name>在此处打开VSCode</name>
+	<submenu></submenu>
+	<unique-id>1776582964937744-1</unique-id>
+	<command>code %F</command>
+	<description></description>
+	<range>*</range>
+	<patterns>*</patterns>
+	<directories/>
 </action>
 <action>
 	<icon></icon>
