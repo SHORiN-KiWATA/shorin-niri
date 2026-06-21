@@ -1,6 +1,6 @@
 # shorin-niri
 
-Shorin Niri，基于Niri和waybar的桌面预设。
+Shorin Niri，基于 Niri 和 Waybar 的桌面预设。
 
 ## Preview 预览图
 
@@ -23,7 +23,7 @@ Shorin Niri，基于Niri和waybar的桌面预设。
     shorinniri init
     ```
 
-    Then open niri session with `niri-session` or use your prefered display manager.
+    Then open niri session with `niri-session` or use your preferred display manager.
 
     然后用`niri-session`命令启动niri会话，或者使用你的显示管理器。
 
@@ -33,18 +33,18 @@ Shorin Niri，基于Niri和waybar的桌面预设。
     shorinniri update
     ```
 
-    In case, your dotfiles will be backuped to `.cache/shorin-niri-backup`.
+    In case, your dotfiles will be backed up to `.cache/shorin-niri-backup`.
 
     以防万一，配置文件会被备份到`.cache/shorin-niri-backup`。
 
 - Uninstall 卸载
 
     ```
-    shorinniri remove 
+    shorinniri remove
     ```
 
 
 
 ## Docs 文档
 
-[shorin-niri]([https://](https://github.com/SHORiN-KiWATA/Shorin-ArchLinux-Guide/wiki/ShorinNiri%E5%8A%9F%E8%83%BD%E4%BB%8B%E7%BB%8D))
+[shorin-niri](https://github.com/SHORiN-KiWATA/Shorin-ArchLinux-Guide/wiki/ShorinNiri%E5%8A%9F%E8%83%BD%E4%BB%8B%E7%BB%8D)
