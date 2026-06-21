@@ -40,13 +40,9 @@ binds {
     Mod+Shift+W hotkey-overlay-title="快速聚焦到微信 Quick focus Wechat" {spawn "nirius" "focus" "--app-id" "wechat" ;} 
 
     //niri-shorin-fork
-    Mod+Alt+WheelScrollUp   { adjust-magnifier-zoom 0.2; }
-    Mod+Alt+WheelScrollDown { adjust-magnifier-zoom -0.2; }
-    Mod+Shift+Z         { toggle-magnifier; }
-
-
-
-    
+    Mod+Alt+WheelScrollUp hotkey-overlay-title="滚轮放大屏幕 magnifier"  { adjust-magnifier-zoom 0.2; }
+    Mod+Alt+WheelScrollDown hotkey-overlay-title="滚轮缩小屏幕 magnifier" { adjust-magnifier-zoom -0.2; }
+    Mod+Shift+Z  hotkey-overlay-title="切换屏幕缩放效果 magnifier" { toggle-magnifier; }
 
     // niri-sidebar扩展相关
     // 警告：这是实验性功能
