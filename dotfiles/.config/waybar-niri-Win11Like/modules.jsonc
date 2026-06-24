@@ -121,10 +121,10 @@
   //截图
    "custom/screenshot" :{
     "format": "",
-    "tooltip-format": "左键：快速截图（仅保存到剪贴板）\n右键：打开菜单\n中键：打开长截图菜单",
+    "tooltip-format": "左键：快速截图（仅保存到剪贴板）\n右键：打开长截图菜单\n中键：打开截图菜单",
     "on-click":"~/.config/waybar/scripts/screenshot.sh",
-    "on-click-right": "~/.config/waybar/scripts/power-screenshot.sh",
-    "on-click-middle":"wl-longshot-menu"
+    "on-click-middle": "~/.config/waybar/scripts/power-screenshot.sh",
+    "on-click-right":"wl-longshot-menu"
   },
   
   //录屏screenrec
