@@ -22,7 +22,7 @@ binds {
     Mod+Alt+T hotkey-overlay-title="切换颜色策略 Change color strategy" {spawn "~/.config/scripts/matugen-select-type.sh";}
     Mod+F10 hotkey-overlay-title="随机切换壁纸 Random wallpaper" {spawn "waypaper" "--random";}
     Mod+Shift+F10 hotkey-overlay-title="随机下载动漫壁纸 Random download anime wallpaper" {spawn "~/.config/scripts/random-anime-wallpaper.sh";}
-    Mod+F1 hotkey-overlay-title="开关输入法 Toggle fcitx" {spawn-sh "pkill fcitx5 || fcitx5 ";}
+    Mod+F1 hotkey-overlay-title="开关输入法 Toggle fcitx" {spawn-sh "pkill fcitx5 || fcitx5 -d";}
     Mod+F2 hotkey-overlay-title=null  {spawn-sh "pkill cava || true && pkill waybar || true && waybar -c $HOME/.config/waybar/config.jsonc -s $HOME/.config/waybar/style.css ";}
     Mod+F3  hotkey-overlay-title=null {spawn-sh "pkill cava || true && pkill waybar || true &&  waybar -c $HOME/.config/waybar-niri-Win11Like/config.jsonc -s $HOME/.config/waybar-niri-Win11Like/style.css ";}
     // 这一行是用waybar自己支持的信号功能隐藏waybar，但进程没有退出，资源占用依旧有

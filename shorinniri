@@ -54,7 +54,7 @@ TARGET_SOFTWARE=(
     "gst-plugins-base" "gst-plugins-good" "gst-libav" "thunar-archive-plugin" "thunar-volman"
     # --- Standard CLI/GUI Packages ---
     "bat" "bazaar" "bluetui" "clipnotify" "xclip" "eza" "fish" "starship" "zoxide"
-    "chafa" "timg" "imagemagick" "waifu2x-ncnn-vulkan" "jq" "nwg-look" "pacman-contrib"
+    "chafa" "timg" "imagemagick" "waifu2x-ncnn-vulkan" "jq" "pacman-contrib"
     "wlsunset" "pavucontrol" "downgrade" "strace" "xdg-terminal-exec" "kitty" "firefox"
     "fastfetch" "btop" "gdu" "opencode"
     # --- AUR Specific Packages ---
