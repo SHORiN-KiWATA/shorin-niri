@@ -56,7 +56,7 @@ TARGET_SOFTWARE=(
     "bat" "bazaar" "bluetui" "clipnotify" "xclip" "eza" "fish" "starship" "zoxide"
     "chafa" "timg" "imagemagick" "waifu2x-ncnn-vulkan" "jq" "pacman-contrib"
     "wlsunset" "pavucontrol" "downgrade" "strace" "xdg-terminal-exec" "kitty" "firefox"
-    "fastfetch" "btop" "gdu" "opencode"
+    "fastfetch" "btop" "gdu" "opencode" "miyu"
     # --- AUR Specific Packages ---
     "shorin-contrib-git" "linuxqq-clipsync-git" "ddcutil-service" "python-pywalfox"
     "waypaper" "niri-sidebar-git" "wl-longshot-git" "shorin-screenrec-menu-git" "shorin-proton-wrapper-git"
