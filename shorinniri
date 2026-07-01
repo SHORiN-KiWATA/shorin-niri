@@ -51,7 +51,8 @@ TARGET_SOFTWARE=(
     "nautilus" "thunar" "file-roller" "gvfs-smb" "gvfs-mtp" "gvfs-gphoto2"
     "nautilus-open-any-terminal" "gnome-keyring" "tumbler" "poppler-glib"
     "ffmpegthumbnailer" "webp-pixbuf-loader" "libgsf" "xdg-desktop-portal-gtk" "icoextract" "python-pillow"
-    "gst-plugins-base" "gst-plugins-good" "gst-libav" "thunar-archive-plugin" "thunar-volman"
+    "gst-plugins-base" "gst-plugins-good" "gst-libav" "thunar-archive-plugin" "thunar-volman" "qt5-wayland"
+    "qt6-wayland"
     # --- Standard CLI/GUI Packages ---
     "bat" "bazaar" "bluetui" "clipnotify" "xclip" "eza" "fish" "starship" "zoxide"
     "chafa" "timg" "imagemagick" "waifu2x-ncnn-vulkan" "jq" "pacman-contrib"
