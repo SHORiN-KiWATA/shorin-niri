@@ -417,6 +417,11 @@ apply_user_configs() {
         mkdir -p "$wp_dest"
         cp -an "$WALLPAPER_SRC_DIR"/. "$wp_dest/" || true
     fi
+
+    # 初始化miyu
+    if command -v miyu 2>&1; then 
+	miyu fish-init 
+    fi
     
     shorin link >/dev/null 2>&1 || true
 
