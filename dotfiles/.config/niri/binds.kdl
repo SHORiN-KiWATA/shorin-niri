@@ -31,6 +31,8 @@ binds {
     Mod+F4 hotkey-overlay-title="开关任务栏 Toggle bar" {spawn-sh "pkill waybar && pkill cava || waybar ";}
     Mod+F5 hotkey-overlay-title="快速存档 Quick save" {spawn "quicksave";}
     Mod+F8 hotkey-overlay-title="快速读档 Quick load" {spawn "quickload";}
+    Mod+F11 hotkey-overlay-title="截图翻译 Screenshot Translator" {spawn "wl-wordlens";}
+    Mod+Shift+T hotkey-overlay-title="截图翻译 Screenshot Translator" {spawn "wl-wordlens";}
     Mod+F12 hotkey-overlay-title="截取所有显示器 Screenshot All Monitor"  {spawn-sh "grim - | wl-copy & pw-play /usr/share/sounds/freedesktop/stereo/camera-shutter.oga ";}
     // 这是什么！
     Mod+Ctrl+Shift+Alt+B hotkey-overlay-title="播放Bad Apple Play Bad Apple" { spawn "bad-apple" ;}

@@ -109,6 +109,7 @@ window-rule {
     match app-id="one.alynx.showmethekey"
     match app-id="io.github.shorin.proton_wrapper_configure"
     match app-id="io.github.shorin.proton_wrapper_manager"
+    match app-id="com.wordlens.app"
     open-floating true
 }
 // 开启后不聚焦的窗口
