@@ -247,5 +247,9 @@ grid-overview {
     grid-all-monitors true
 }
 
+debug {
+	// 放宽聚焦拦截，修复点击托盘程序无法跳转聚焦的问题。
+	honor-xdg-activation-with-invalid-serial
+}
 
 
