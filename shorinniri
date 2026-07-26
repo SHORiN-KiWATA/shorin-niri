@@ -43,7 +43,7 @@ TARGET_SOFTWARE=(
     # --- Main Meta Package ---
     "shorin-niri-git" "xdg-desktop-portal-gnome" "cliphist-tui-git"
     # --- Desktop Extras & Media ---
-    "breeze-cursors" "mpv" "satty" "wf-recorder" "wl-screenrec-git" "imv"
+    "breeze-cursors" "mpv" "satty" "wf-recorder" "wl-screenrec-git" "imv" "niri-display-settings-git"
     # --- Fonts ---
     "noto-fonts" "noto-fonts-cjk" "noto-fonts-emoji" "ttf-jetbrains-mono-nerd"
     "ttf-jetbrains-maple-mono-nf-xx-xx" "ttf-lxgw-wenkai-screen"
