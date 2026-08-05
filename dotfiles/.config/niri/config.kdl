@@ -77,6 +77,14 @@ recent-windows {
         Mod+Shift+grave { previous-window filter="app-id"; }
     }
 }
+
+// 内置屏幕分享
+screen-cast-picker {
+    corner-radius 8
+}
+
+
+
 // 这是include进来的颜色文件，主要设置了窗口边框
 include "colors.kdl"
 
