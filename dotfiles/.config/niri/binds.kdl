@@ -48,20 +48,6 @@ binds {
     Mod+Alt+WheelScrollDown hotkey-overlay-title="滚轮缩小屏幕 magnifier" { adjust-magnifier-zoom -0.2; }
     Mod+Shift+Z  hotkey-overlay-title="切换屏幕缩放效果 magnifier" { toggle-magnifier; }
 
-    // niri-sidebar扩展相关
-    // 警告：这是实验性功能
-    // 切换 移动聚焦窗口至侧边栏 （建议配合切换浮动聚焦的快捷键使用，我设置的是super+n）
-    Mod+Alt+S hotkey-overlay-title="收起窗口 Move to Sidebar" { spawn "niri-sidebar" "toggle-window"; }
-    Mod+M hotkey-overlay-title="收起窗口 Move to Sidebar" { spawn "niri-sidebar" "toggle-window"; }
-    // 切换 收起/展开侧边栏
-    Mod+Alt+Z hotkey-overlay-title="展开/收起侧边栏 Toggle Sidebar" { spawn "niri-sidebar" "toggle-visibility";}
-    // 反向排序侧边栏
-    Mod+Alt+X hotkey-overlay-title=null { spawn "niri-sidebar" "flip";}
-    // 重新排列侧边栏中的窗口（侧边栏中的窗口本质是一个浮动窗口，你有时候可能会把它移动到别的地方
-    // 例如 ctrl+c居中。此时按下此键可以重新排列）
-    Mod+Alt+R hotkey-overlay-title="重置侧边栏 Reorder Sidebar"  { spawn "niri-sidebar" "reorder"; }
-    
-
     // 临时开一个浮动终端
     Mod+Slash hotkey-overlay-title="临时终端 Quick Terminal" {spawn "kitty" "--single-instance" "--class" "quickterminal";}
     //打开浏览器
@@ -344,6 +330,7 @@ binds {
 
     Mod+F  hotkey-overlay-title="最大化 maximize" { maximize-column; }
     Mod+Alt+F hotkey-overlay-title="全屏 fullscreen"  { fullscreen-window; }
+    Mod+M  hotkey-overlay-title="最小化 Minimize" { minimize-window; }
 
     // Expand the focused column to space not taken up by other fully visible columns.
     // Makes the column "fill the rest of the space".
