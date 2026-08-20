@@ -203,9 +203,9 @@ spawn-at-startup "fcitx5"
 // 剪贴板守护进程
 	//cliphist
 spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
-	// wayland <--> x11 剪贴板同步 这个包是我自己推的clipsync-git
+	// wayland <--> x11 剪贴板同步 这个包是我自己推的linuxqq-clipsync-git
 spawn-at-startup "systemctl" "--user" "start" "linuxqq-clipsync"
-// 闲置时自动熄屏锁屏睡眠的脚本，说实话这东西毫无用处
+// 闲置时自动熄屏锁屏睡眠的脚本，说实话这东西用处不大，建议用 mod+shift+P 打开电源菜单。
 // spawn-at-startup "~/.config/niri/scripts/swayidle.sh"
 // 大写锁定键的osd显示
 spawn-at-startup "swayosd-server"
