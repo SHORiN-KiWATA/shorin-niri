@@ -190,6 +190,8 @@ spawn-sh-at-startup "sleep 1 &&  waypaper --random"
 //spawn-at-startup "waypaper" "--restore"
 // 询问管理员权限功能（身份验证）
 spawn-at-startup "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+// 屏幕分享、录屏相关的环境设置,如果屏幕分享出异常的话可以开启
+ spawn-sh-at-startup "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP=niri LANG LANGUAGE LC_MESSAGES LC_CTYPE"
 // GNOME tracker修复
 spawn-sh-at-startup "systemctl --user set-environment XDG_SESSION_CLASS=user"
 // 通知程序
@@ -201,9 +203,9 @@ spawn-at-startup "fcitx5"
 // 剪贴板守护进程
 	//cliphist
 spawn-at-startup "wl-paste" "--watch" "cliphist" "store"
-	// wayland <--> x11 剪贴板同步 这个包是我自己推的linuxqq-clipsync-git
+	// wayland <--> x11 剪贴板同步 这个包是我自己推的clipsync-git
 spawn-at-startup "systemctl" "--user" "start" "linuxqq-clipsync"
-// 闲置时自动熄屏锁屏睡眠的脚本，说实话这东西用处不大，建议用 Mod + Shift + P 打开电源菜单
+// 闲置时自动熄屏锁屏睡眠的脚本，说实话这东西毫无用处
 // spawn-at-startup "~/.config/niri/scripts/swayidle.sh"
 // 大写锁定键的osd显示
 spawn-at-startup "swayosd-server"
