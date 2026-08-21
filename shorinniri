@@ -61,7 +61,7 @@ TARGET_SOFTWARE=(
     # --- AUR Specific Packages ---
     "shorin-contrib-git" "linuxqq-clipsync-git" "ddcutil-service" "python-pywalfox"
     "waypaper" "wl-longshot-git" "shorin-screenrec-menu-git" "shorin-proton-wrapper-git"
-    "wl-wordlens-git"
+    
     # --- Input Method ---
     "fcitx5-shorin-patched-git" "fcitx5-configtool" "fcitx5-gtk" "fcitx5-qt" "fcitx5-rime" "rime-ice-git" "rime-wubi" "rime-wanxiang-gram-zh-hans" "rime-llm-translator-git"
 )
