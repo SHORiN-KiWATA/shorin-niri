@@ -216,7 +216,6 @@ spawn-at-startup "~/.config/niri/scripts/screenshot-sound.sh"
 // alt+tab切换器（这是一个第三方，无缩略图显示的切换器）
 //spawn-at-startup "niriswitcher"
 // niri-siderbar
-spawn-at-startup "~/.local/bin/niri-sidebar" "listen"
 // 允许root通过用户的xwayland打开窗口
 spawn-at-startup "xhost" "+si:localuser:root"
 // 音频调整程序，easyeffects，-w可以在后台启动

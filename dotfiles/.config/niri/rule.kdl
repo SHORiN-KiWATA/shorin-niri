@@ -199,7 +199,7 @@ window-rule {
 window-rule {
     match app-id=r#"^org\.keepassxc\.KeePassXC$"#
     match app-id=r#"^org\.gnome\.World\.Secrets$"#
-    match app-id="wechat"
+    //match app-id="wechat"
     match app-id="^WebApp-GeminiAiStudio1566$"
     block-out-from "screen-capture"
 

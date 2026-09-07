@@ -57,7 +57,7 @@ TARGET_SOFTWARE=(
     "bat" "bazaar" "bluetui" "clipnotify" "xclip" "eza" "fish" "starship" "zoxide"
     "chafa" "timg" "imagemagick" "waifu2x-ncnn-vulkan" "jq" "pacman-contrib"
     "wlsunset" "pavucontrol" "downgrade" "strace" "xdg-terminal-exec" "kitty" "firefox"
-    "fastfetch" "btop" "gdu" "opencode" "miyu"
+    "fastfetch" "btop" "gdu" "miyu"
     # --- AUR Specific Packages ---
     "shorin-contrib-git" "linuxqq-clipsync-git" "ddcutil-service" "python-pywalfox"
     "waypaper" "wl-longshot-git" "shorin-screenrec-menu-git" "shorin-proton-wrapper-git"
@@ -746,8 +746,8 @@ apply_user_configs() {
         cp "$HOME/.config/niri/output-example.kdl" "$HOME/.config/niri/output.kdl"
     fi
 
-    local doc_src="/usr/share/doc/shorin-niri/README-Niri.txt"
-    if [[ -f "$doc_src" ]]; then cp -n "$doc_src" "$HOME/必看-shoirn-Niri使用方法.txt" 2>/dev/null || true; fi
+    local doc_src="/usr/share/doc/shorin-niri/README-Niri.md"
+    if [[ -f "$doc_src" ]]; then cp -n "$doc_src" "$HOME/必看-Shorin-Niri使用方法.md" 2>/dev/null || true; fi
     
     ok "$(_t "Environment initialization complete!" "环境初始化全部完成！")"
 }
@@ -769,7 +769,7 @@ remove_dotfiles() {
         if [[ -e "$dest_file" || -L "$dest_file" ]]; then rm -f "$dest_file"; ((removed_count++)); fi
     done < <(find . -type f -print0)
     
-    rm -f "$HOME/.config/niri/dms/colors.kdl" "$HOME/必看-shoirn-Niri使用方法.txt" 2>/dev/null
+    rm -f "$HOME/.config/niri/dms/colors.kdl" "$HOME/必看-Shorin-Niri使用方法.md" "$HOME/必看-shoirn-Niri使用方法.txt" 2>/dev/null
     rmdir "$HOME/.config/niri/dms" 2>/dev/null
     
     if [[ -f "/etc/firefox/policies/policies.json" ]]; then
