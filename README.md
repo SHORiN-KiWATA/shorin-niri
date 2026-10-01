@@ -45,6 +45,10 @@ Shorin Niri，基于 Niri 和 Waybar 的桌面预设。
 
 
 
+## QQ
+
+预装了 [linuxqq-wayland-fix](https://github.com/SHORiN-KiWATA/linuxqq-wayland-fix)，修复 QQ 以 Wayland 运行时屏幕共享、共享电脑声音和剪贴板的问题。请从应用菜单的「QQ（Wayland修复版）」打开 QQ。
+
 ## Docs 文档
 
 [shorin-niri](https://github.com/SHORiN-KiWATA/Shorin-ArchLinux-Guide/blob/main/wiki/archlinux/ShorinNiri%E5%8A%9F%E8%83%BD%E4%BB%8B%E7%BB%8D.md)
