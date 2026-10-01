@@ -59,7 +59,7 @@ TARGET_SOFTWARE=(
     "wlsunset" "pavucontrol" "downgrade" "strace" "xdg-terminal-exec" "kitty" "firefox"
     "fastfetch" "btop" "gdu" "miyu"
     # --- AUR Specific Packages ---
-    "shorin-contrib-git" "linuxqq-clipsync-git" "ddcutil-service" "python-pywalfox"
+    "shorin-contrib-git" "linuxqq-wayland-fix-git" "ddcutil-service" "python-pywalfox"
     "waypaper" "wl-longshot-git" "shorin-screenrec-menu-git" "shorin-proton-wrapper-git"
     
     # --- Input Method ---
