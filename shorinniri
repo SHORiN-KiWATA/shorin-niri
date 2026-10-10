@@ -54,12 +54,12 @@ TARGET_SOFTWARE=(
     "gst-plugins-base" "gst-plugins-good" "gst-libav" "thunar-archive-plugin" "thunar-volman" "qt5-wayland"
     "qt6-wayland"
     # --- Standard CLI/GUI Packages ---
-    "bat" "bazaar" "bluetui" "clipnotify" "xclip" "eza" "fish" "starship" "zoxide"
+    "bat" "bazaar" "bluetui" "clipnotify" "eza" "fish" "starship" "zoxide"
     "chafa" "timg" "imagemagick" "waifu2x-ncnn-vulkan" "jq" "pacman-contrib"
     "wlsunset" "pavucontrol" "downgrade" "strace" "xdg-terminal-exec" "kitty" "firefox"
     "fastfetch" "btop" "gdu" "miyu"
     # --- AUR Specific Packages ---
-    "shorin-contrib-git" "linuxqq-wayland-fix-git" "ddcutil-service" "python-pywalfox"
+    "shorin-contrib-git" "ddcutil-service" "python-pywalfox"
     "waypaper" "wl-longshot-git" "shorin-screenrec-menu-git" "shorin-proton-wrapper-git"
     
     # --- Input Method ---
