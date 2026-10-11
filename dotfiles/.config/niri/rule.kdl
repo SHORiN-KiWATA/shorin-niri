@@ -216,8 +216,7 @@ window-rule {
 
 // 忽略grid
 window-rule {
-    match app-id="steam"
-    match app-id="steam" title=r#"^notificationtoasts_\d+_desktop$"#
+    match app-id="^steam$"
     match app-id="one.alynx.showmethekey"
     ignore-grid-overview true
 }
