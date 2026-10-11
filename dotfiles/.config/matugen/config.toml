@@ -63,6 +63,11 @@ output_path = '~/.config/gtk-3.0/colors.css'
 input_path ='~/.config/matugen/templates/gtk-colors.css'
 output_path = '~/.config/gtk-4.0/colors.css'
 
+[templates.gnome-accent]
+input_path = '~/.config/matugen/templates/gnome-accent.py'
+output_path = '~/.cache/matugen/gnome-accent.py'
+post_hook = 'python3 ~/.cache/matugen/gnome-accent.py &'
+
 #[templates.swaync]
 #input_path = '~/.config/matugen/templates/swaync-colors.css'
 #output_path = '~/.config/swaync/colors.css'
