@@ -87,6 +87,9 @@ recent-windows {
 }
 
 input {
+    // 聚焦的窗口全屏时，鼠标不会移到别的显示器上
+    confine-mouse-to-fullscreen
+
     keyboard {
         xkb {
             // You can set rules, model, layout, variant and options.
