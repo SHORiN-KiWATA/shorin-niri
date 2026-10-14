@@ -1,6 +1,9 @@
 
 layout {
 
+    // 聚焦的平铺窗口可以覆盖浮动窗口
+    focused-window-above-floating
+
     //设置工作区背景颜色
     //background-color "transparent"
     // Set gaps around windows in logical pixels.
