@@ -241,23 +241,25 @@ magnifier {
 }
 
 grid-overview {
-    gap 16
-    padding 80
-    // 聚焦的格子由聚焦环标出，不再放大
-    // focused-column-scale 1.04
+    // column 和 column 的间距
+    gap 20 
+    // gird 区域里边框的外边距
+    padding 100
+    // grid 中聚焦column的缩放
+    //focused-column-scale 1.0
     // 鼠标移动时，焦点跟随到鼠标底下的格子（移动超过 8px 才接管，键盘导航优先）
     focus-follows-mouse
-    // grid 里聚焦环的宽度，不随缩略图缩小
     focus-ring-width 8
-    // 聚焦环在格子之间切换的动画："grow"（原地长出/收回）、"slide"（滑动）、"none"（无动画）
-    focus-ring-transition "grow"
     grid-all-monitors true
     minimized-highlight {
         // off
-        padding 6             
+        color "#999999"        
+        urgent-color "#ff9999"
+        padding 10
         // 不写 corner-radius 时，底框圆角自动和窗口圆角同心，跟聚焦环对齐
         // corner-radius 8
     }
+   focus-ring-transition "grow"
 }
 
 debug {
