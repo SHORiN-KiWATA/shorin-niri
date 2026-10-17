@@ -1,0 +1,8 @@
+// niri shorin fork 的 computer use 功能
+workspace "agent"
+
+window-rule {
+    match is-agent=true
+    open-on-workspace "agent"
+    open-focused false
+}
