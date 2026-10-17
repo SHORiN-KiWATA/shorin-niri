@@ -2,7 +2,6 @@
 // Find more information on the wiki:
 // https://yalter.github.io/niri/Configuration:-Window-Rules
 
-
 // 放进overview里的壁纸程序
 layer-rule{
     match namespace="awww-daemonoverview"
@@ -168,6 +167,11 @@ window-rule {
     off
     }
 }
+window-rule {
+    match title="Babry"
+    open-fullscreen true
+
+}
 
 
 window-rule {
@@ -199,7 +203,7 @@ window-rule {
 window-rule {
     match app-id=r#"^org\.keepassxc\.KeePassXC$"#
     match app-id=r#"^org\.gnome\.World\.Secrets$"#
-    //match app-id="wechat"
+    match app-id="wechat"
     match app-id="^WebApp-GeminiAiStudio1566$"
     block-out-from "screen-capture"
 
@@ -219,4 +223,12 @@ window-rule {
     match app-id="^steam$"
     match app-id="one.alynx.showmethekey"
     ignore-grid-overview true
+}
+
+// 聚焦修复
+window-rule {
+    match app-id="QQ"
+    match app-id="wechat"
+    on-xdg-activate "focus"
+
 }

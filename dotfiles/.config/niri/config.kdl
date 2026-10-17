@@ -244,9 +244,7 @@ grid-overview {
     // column 和 column 的间距
     gap 20 
     // gird 区域里边框的外边距
-    padding 100
-    // grid 中聚焦column的缩放
-    //focused-column-scale 1.0
+    padding 65
     // 鼠标移动时，焦点跟随到鼠标底下的格子（移动超过 8px 才接管，键盘导航优先）
     focus-follows-mouse
     focus-ring-width 8
@@ -260,11 +258,6 @@ grid-overview {
         // corner-radius 8
     }
    focus-ring-transition "grow"
-}
-
-debug {
-	// 放宽聚焦拦截，修复点击托盘程序无法跳转聚焦的问题。
-	honor-xdg-activation-with-invalid-serial
 }
 
 // 这是include进来的颜色文件
