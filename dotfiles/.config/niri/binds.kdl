@@ -33,7 +33,6 @@ binds {
     Mod+F8 hotkey-overlay-title="快速读档 Quick load" {spawn "quickload";}
     Mod+F9 hotkey-overlay-title="语音助手 Voice AI Assistant" {spawn "miyu" "listen";}
     Mod+F11 hotkey-overlay-title="截图翻译 Screenshot Translator" {spawn "wl-wordlens";}
-    Mod+Shift+T hotkey-overlay-title="截图翻译 Screenshot Translator" {spawn "wl-wordlens";}
     Mod+F12 hotkey-overlay-title="截取所有显示器 Screenshot All Monitor"  {spawn-sh "grim - | wl-copy & pw-play /usr/share/sounds/freedesktop/stereo/camera-shutter.oga ";}
     // 这是什么！
     Mod+Ctrl+Shift+Alt+B hotkey-overlay-title="播放Bad Apple Play Bad Apple" { spawn "bad-apple" ;}
