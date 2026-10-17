@@ -1,6 +1,6 @@
 layout{
     focus-ring{
-        active-gradient from="{{colors.primary.default.hex}}cc" to="{{colors.tertiary.default.hex}}cc" angle=135
+        active-gradient from="{{colors.tertiary.default.hex}}E6" to="{{colors.primary.default.hex}}E6" angle=135
         urgent-color "{{colors.error.default.hex}}"
 
         }
@@ -21,7 +21,7 @@ screen-cast-picker {
 grid-overview {
     minimized-highlight {
         // off
-        color "{{colors.secondary.default.hex}}cc"
-        urgent-color "{{colors.primary.default.hex}}cc"
+        color "{{colors.secondary.default.hex}}80"
+        urgent-color "{{colors.primary.default.hex}}80"
     }
 }
