@@ -6,3 +6,7 @@ window-rule {
     open-on-workspace "agent"
     open-focused false
 }
+
+agent {
+    hide-seat-from "xwayland-satellite" "zed"
+}
