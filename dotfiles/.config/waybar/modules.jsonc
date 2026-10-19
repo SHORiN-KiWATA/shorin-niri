@@ -342,7 +342,7 @@
   "custom/colorpicker": {
     "tooltip": true,
     "format": "󱏜",
-    "on-click": "niri msg pick-color | grep -q '^Hex' && pw-play /usr/share/sounds/freedesktop/stereo/message.oga",
+    "on-click": "c=$(niri msg pick-color | grep -Po '#[[:xdigit:]]{6}') && wl-copy -n \"$c\" && pw-play /usr/share/sounds/freedesktop/stereo/message.oga",
     "on-click-middle":"~/.config/scripts/matugen-select-type.sh",
     "on-click-right":"waypaper",
     "tooltip-format":"左键：提取颜色\n右键：打开壁纸切换器\n中键：切换系统配置方案",
