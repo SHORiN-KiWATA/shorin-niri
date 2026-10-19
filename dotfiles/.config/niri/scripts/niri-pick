@@ -260,32 +260,16 @@ if [[ "$ACTION" =~ ^(all|title|appid|pid)$ ]]; then
     esac
 
 elif [[ "$ACTION" =~ ^(hex|rgb)$ ]]; then
-    if command -v hyprpicker &>/dev/null; then
-        # 优先使用 hyprpicker (修复了上个版本的正则小笔误)
-        if [[ "$ACTION" == "rgb" ]]; then
-            raw_val=$(hyprpicker --format rgb -n 2>/dev/null)
-            if [[ "$raw_val" =~ ^[0-9]+\ [0-9]+\[0-9]+$ ]]; then
-                value="rgb(${raw_val// /, })"
-            else
-                value="$raw_val"
-            fi
-            label="$LBL_COLOR_RGB"
-        else
-            value=$(hyprpicker --format hex -n 2>/dev/null)
-            label="$LBL_COLOR_HEX"
-        fi
-    else
-        # 退回 niri 原生吸色
-        output=$(niri msg pick-color 2>/dev/null)
-        case "$ACTION" in
-            hex)
-                value=$(echo "$output" | grep -Po '#[[:xdigit:]]{6}')
-                label="$LBL_COLOR_HEX" ;;
-            rgb)
-                value=$(echo "$output" | grep -Po 'rgb\([^)]+\)')
-                label="$LBL_COLOR_RGB" ;;
-        esac
-    fi
+    # niri 自带吸色（冻结画面 + 放大镜）
+    output=$(niri msg pick-color 2>/dev/null)
+    case "$ACTION" in
+        hex)
+            value=$(echo "$output" | grep -Po '#[[:xdigit:]]{6}')
+            label="$LBL_COLOR_HEX" ;;
+        rgb)
+            value=$(echo "$output" | grep -Po 'rgb\([^)]+\)')
+            label="$LBL_COLOR_RGB" ;;
+    esac
     
     [[ -z "$value" ]] && { echo "$STR_CANCELLED"; exit 0; }
 fi
