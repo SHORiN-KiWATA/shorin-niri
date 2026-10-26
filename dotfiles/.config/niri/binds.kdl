@@ -95,7 +95,9 @@ binds {
     Mod+O hotkey-overlay-title="切换总览界面 toggle overview" repeat=false { toggle-overview; }
     Mod+G hotkey-overlay-title="切换总览界面 toggle overview" repeat=false { toggle-overview; }
     Mod+Alt+G hotkey-overlay-title="切换总览界面 toggle overview" repeat=false { toggle-overview; }
-    Mod hotkey-overlay-title="切换网格总览界面 toggle grid overview" repeat=false { toggle-grid-overview; }
+    Mod hotkey-overlay-title="切换网格总览界面 toggle grid overview" {
+        release { toggle-grid-overview; }
+    }
     // 关闭聚焦窗口
     Mod+Q hotkey-overlay-title="关闭聚焦窗口 Close focus window" repeat=false { close-window; }
     Alt+F4  hotkey-overlay-title="强制杀死窗口 Force kill -9 window" repeat=false { spawn "~/.config/niri/scripts/niri-force-kill-window"; }
