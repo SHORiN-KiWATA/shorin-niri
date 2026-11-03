@@ -8,5 +8,5 @@ window-rule {
 }
 
 agent {
-    hide-seat-from "xwayland-satellite" "zed" "vim" "gvim"
+    hide-seat-from "xwayland-satellite" "zed" "vim" "gvim" "imv-wayland"
 }
