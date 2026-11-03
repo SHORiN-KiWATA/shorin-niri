@@ -129,7 +129,7 @@
   
   //录屏screenrec
   "custom/wfrec": {
-    "exec": "~/.config/waybar/scripts/screenrec status-json",
+    "exec": "shorin-screenrec-menu status-json",
     "return-type": "json",
     //"interval": 1,                 // 每秒刷新一次
     "signal": 9, // 与脚本里的 WAYBAR_SIG 对应
