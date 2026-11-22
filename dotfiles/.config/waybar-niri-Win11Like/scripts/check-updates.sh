@@ -13,6 +13,8 @@ CACHE_FILE="$CACHE_DIR/updates.json"
 LOCK_FILE="/tmp/waybar-updates.lock"
 MAX_LINES=50
 CHECK_INTERVAL=3600
+RETRY_INTERVAL=30      # 检查失败（例如没网）后多久重试
+NET_WAIT_MAX=60        # 启动时最多等网络多少轮（每轮 5 秒，即 5 分钟）
 PACMAN_LOG="/var/log/pacman.log"
 
 # 确保缓存目录存在
@@ -38,6 +40,28 @@ on_sigusr1() {
 
 # 初始绑定信号
 trap 'on_sigusr1' SIGUSR1
+
+# === 网络检测 ===
+check_network() {
+    # NetworkManager 认为在线 + 真的能访问外网，两个都满足才继续
+    if command -v nm-online >/dev/null 2>&1; then
+        nm-online -q -t 3 >/dev/null 2>&1 || return 1
+    fi
+    curl -sI --connect-timeout 3 "http://captive.apple.com/hotspot-detect.html" >/dev/null 2>&1
+}
+
+# 等待网络就绪；超时返回 1
+wait_for_network() {
+    local tries=0
+    while ! check_network; do
+        tries=$((tries + 1))
+        if [[ $tries -ge $NET_WAIT_MAX ]]; then
+            return 1
+        fi
+        sleep 5
+    done
+    return 0
+}
 
 # === 上次系统更新时间 ===
 format_age() {
@@ -196,25 +220,36 @@ run_check() {
         
         if [[ $age -lt $((CHECK_INTERVAL - 10)) ]]; then
             emit_cached_json
-            return
+            return 0
         fi
     fi
 
     # 准备干脏活累活前，重置标志位
     FORCE_UPDATE=0
-    
+
+    # 2. 先确认网络可用；没网就快速失败，交给主循环稍后重试
+    if ! wait_for_network; then
+        if [[ -f "$CACHE_FILE" ]]; then
+            emit_cached_json
+        else
+            printf '{"text": "...", "alt": "updated", "tooltip": "Waiting for network...\\n----------------\\n%s"}\n' "$(get_last_system_update_info)"
+        fi
+        return 1
+    fi
+
     # 【核心修复】：动态屏蔽 SIGUSR1 信号！
     # 在执行耗时的网络和数据库操作时，无视一切 Ctrl+R 带来的外部干扰。
     trap '' SIGUSR1
 
     # 2. 获取锁进行更新
+    local rc=0
     (
         if flock -x -n 9; then
-            perform_update_check || true
+            perform_update_check || exit 1
         else
-            flock -x -w 120 9 || true
+            flock -x -w 120 9 || exit 1
         fi
-    ) 9>"$LOCK_FILE" || true
+    ) 9>"$LOCK_FILE" || rc=$?
 
     # 【核心修复】：干完活了，重新恢复对 SIGUSR1 信号的监听
     trap 'on_sigusr1' SIGUSR1
@@ -225,12 +260,17 @@ run_check() {
     else
         printf '{"text": "...", "alt": "updated", "tooltip": "Checking...\\n----------------\\n%s"}\n' "$(get_last_system_update_info)"
     fi
+
+    return $rc
 }
 
 # === 主循环 ===
 while true; do
-    run_check
-    sleep "$CHECK_INTERVAL" &
+    if run_check; then
+        sleep "$CHECK_INTERVAL" &
+    else
+        sleep "$RETRY_INTERVAL" &
+    fi
     
     # 即使 sleep 被信号强行打断，|| true 也能保住脚本的命
     wait $! || true
