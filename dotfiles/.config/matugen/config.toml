@@ -147,7 +147,3 @@ output_path = '~/.config/obs-studio/themes/matugen.obt'
 #input_path = '~/.config/matugen/templates/steam.css'
 #output_path = '~/.config/AdwSteamGtk/custom.css'
 #post_hook =  'adwaita-steam-gtk -i'
-
-[templates.miyu]
-input_path = "~/.config/matugen/templates/miyu-theme.css"
-output_path = "~/.miyu/config/webui-theme.css"

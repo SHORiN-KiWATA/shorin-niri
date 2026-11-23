@@ -263,3 +263,6 @@ grid-overview {
 // 这是include进来的颜色文件
 include "colors.kdl"
 
+// computer use：AI 开的窗口放进 agent 工作区、不抢焦点（agent.kdl）
+include optional=true "agent.kdl"
+

@@ -1,0 +1,350 @@
+#!/usr/bin/env python3
+"""List the controls of a window through its accessibility tree (AT-SPI), for the niri agent seat.
+
+Prints one line per visible control: role, name, state, and the point to click in window
+coordinates, the same coordinates `niri msg agent click --id N X Y` takes without --image.
+Reading controls is faster and more exact than finding them in a screenshot, and it gives
+text that's too small to read in an image.
+
+Usage:
+    agent-ui --id N [--all] [--find TEXT] [--json]
+
+    --id N       window id from `niri msg -j windows`
+    --find TEXT  only controls whose name, role or text contains TEXT (case-insensitive)
+    --all        also list containers and unnamed text (panels, fillers, paragraphs)
+    --offscreen  also list the parts of web pages scrolled out of view (always on with --find)
+    --json       one JSON object per line instead of text
+
+Apps expose their tree only with accessibility on. GTK and Qt do by default. Firefox, Chromium
+and Electron apps need it at start, which `agent-firefox` does; for Chromium and Electron, launch
+with `env ACCESSIBILITY_ENABLED=1 app --force-renderer-accessibility`. Some apps (kitty, Alacritty,
+games, most Wayland-only toolkits) have no tree at all; then this prints nothing useful and the
+screenshot is the way.
+"""
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+
+# Without PyGObject, --help still works; main() says what is missing.
+try:
+    import gi
+
+    gi.require_version("Atspi", "2.0")
+    from gi.repository import Atspi  # noqa: E402
+except (ImportError, ValueError) as exc:
+    Atspi, ATSPI_ERROR = None, exc
+else:
+    ATSPI_ERROR = None
+
+NIRI = os.environ.get("NIRI", "niri")
+
+# Roles worth listing even without a name.
+INTERACTIVE = {
+    "push button", "button", "toggle button", "check box", "radio button", "check menu item",
+    "radio menu item", "menu item", "menu", "combo box", "entry", "password text", "text",
+    "spin button", "slider", "link", "page tab", "list item", "table cell", "tree item",
+    "scroll bar", "editbar", "toggle", "switch", "icon", "heading",
+}
+# Roles that are just structure.
+CONTAINERS = {
+    "application", "frame", "window", "panel", "filler", "scroll pane", "viewport", "section",
+    "grouping", "layered pane", "split pane", "internal frame", "tool bar", "menu bar",
+    "page tab list", "list", "table", "tree", "tree table", "redundant object", "unknown",
+    "document frame", "document web", "form", "landmark", "block quote", "article",
+}
+# Labels and the Atspi.StateType names they stand for.
+STATES = [
+    ("checked", "CHECKED"),
+    ("selected", "SELECTED"),
+    ("pressed", "PRESSED"),
+    ("expanded", "EXPANDED"),
+    ("focused", "FOCUSED"),
+]
+MAX_NODES = 20000
+
+
+def niri_info(window_id):
+    out = subprocess.run(
+        [NIRI, "msg", "agent", "info", "--id", str(window_id)],
+        capture_output=True, text=True,
+    )
+    if out.returncode != 0:
+        sys.exit(out.stderr.strip() or "niri msg agent info failed")
+    info = json.loads(out.stdout)
+    out = subprocess.run([NIRI, "msg", "-j", "windows"], capture_output=True, text=True)
+    if out.returncode == 0:
+        for window in json.loads(out.stdout):
+            if window["id"] == window_id:
+                info["title"] = window.get("title")
+    return info
+
+
+def find_app(pid):
+    desktop = Atspi.get_desktop(0)
+    for i in range(desktop.get_child_count()):
+        app = desktop.get_child_at_index(i)
+        if app is not None:
+            try:
+                if app.get_process_id() == pid:
+                    return app
+            except Exception:
+                continue
+    return None
+
+
+def frames(app):
+    for i in range(app.get_child_count()):
+        child = app.get_child_at_index(i)
+        if child is not None:
+            yield child
+
+
+def extents(obj):
+    try:
+        comp = obj.get_component_iface()
+        if comp is None:
+            return None
+        e = comp.get_extents(Atspi.CoordType.WINDOW)
+    except Exception:
+        return None
+    if e.width <= 0 or e.height <= 0 or e.x < -10000 or e.y < -10000:
+        return None
+    return (e.x, e.y, e.width, e.height)
+
+
+def text_of(obj, role):
+    if role not in ("entry", "text", "password text", "spin button", "combo box", "static"):
+        return None
+    try:
+        t = obj.get_text_iface()
+        if t is None:
+            return None
+        n = t.get_character_count()
+        if role == "password text":
+            return "•" * min(n, 8)
+        return Atspi.Text.get_text(t, 0, min(n, 200))
+    except Exception:
+        return None
+
+
+def value_of(obj):
+    try:
+        v = obj.get_value_iface()
+        return None if v is None else v.get_current_value()
+    except Exception:
+        return None
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument("--id", type=int, required=True)
+    parser.add_argument("--find")
+    parser.add_argument("--all", action="store_true")
+    parser.add_argument("--offscreen", action="store_true")
+    parser.add_argument("--json", action="store_true")
+    args = parser.parse_args()
+    if Atspi is None:
+        sys.exit(
+            f"agent-ui needs PyGObject and AT-SPI ({ATSPI_ERROR}); "
+            "python3 -c \"import gi; gi.require_version('Atspi', '2.0')\" must work"
+        )
+
+    info = niri_info(args.id)
+    pid = info.get("pid")
+    if pid is None:
+        sys.exit("niri doesn't know the window's process")
+    app = find_app(pid)
+    if app is None:
+        sys.exit(
+            f"process {pid} has no accessibility tree; the app has accessibility off or doesn't "
+            "support it. Use a screenshot."
+        )
+
+    ox, oy = info["surface_offset"]
+    popups = info.get("popup_surfaces", [])
+    w, h = info["size"]
+    scale = info.get("scale", 1.0)
+    find = args.find.lower() if args.find else None
+
+    # Each top-level accessible of the app is a window or a popup. Pick the one for this niri
+    # window: by title, which niri knows, then by size. Apps with several windows of the same
+    # size (browsers) can't be told apart by size, and the agent's windows never get the
+    # "active" state that marks the focused one.
+    roots = list(frames(app))
+    title = (info.get("title") or "").strip()
+
+    def fits(root):
+        e = extents(root)
+        return e and abs(e[2] - (w + 2 * ox)) <= 2 * ox + 2 and abs(e[3] - (h + 2 * oy)) <= 2 * oy + 2
+
+    def name_of(root):
+        try:
+            return (root.get_name() or "").strip()
+        except Exception:
+            return ""
+
+    main_root = None
+    if title:
+        named = [r for r in roots if name_of(r) == title] or [
+            r for r in roots if name_of(r) and (name_of(r) in title or title in name_of(r))
+        ]
+        main_root = next((r for r in named if fits(r)), named[0] if named else None)
+    if main_root is None:
+        sized = [r for r in roots if fits(r)]
+        main_root = sized[0] if sized else (roots[0] if roots else app)
+
+    count = 0
+    lines = []
+
+    def emit(obj, role, name, ss, rect, origin, depth, div):
+        x, y, rw, rh = (v / div for v in rect)
+        cx = round(x + rw / 2 - origin[0], 1)
+        cy = round(y + rh / 2 - origin[1], 1)
+        rw, rh = round(rw), round(rh)
+        # The state set walk() already has: asking again fails if the node vanished meanwhile.
+        try:
+            states = [label for label, st in STATES if ss.contains(getattr(Atspi.StateType, st))]
+        except Exception:
+            states = []
+        # Scrolled out of view: listed so that the caller knows to scroll, not to click there.
+        if cy < 0:
+            states.append("offscreen above")
+        elif cy > h:
+            states.append("offscreen below")
+        elif cx < 0 or cx > w:
+            states.append("offscreen")
+        try:
+            if not ss.contains(Atspi.StateType.ENABLED) and role in INTERACTIVE:
+                states.append("disabled")
+        except Exception:
+            pass
+        text = text_of(obj, role)
+        if text and len(text) == 200:
+            text += "…"
+        value = value_of(obj)
+        if role == "heading":
+            try:
+                level = obj.get_attributes().get("level")
+            except Exception:
+                level = None
+            if level:
+                role = f"heading {level}"
+        hay = " ".join(str(v) for v in (role, name, text or "") if v).lower()
+        if find and find not in hay:
+            return
+        entry = {"role": role, "name": name, "x": cx, "y": cy, "w": rw, "h": rh}
+        if states:
+            entry["states"] = states
+        if text not in (None, "", name) and not (name and text.rstrip("…") in name):
+            entry["text"] = text
+        if value is not None:
+            entry["value"] = value
+        lines.append((depth, entry))
+
+    def walk(obj, origin, depth, in_popup, div=1.0, in_doc=False):
+        nonlocal count
+        count += 1
+        if count > MAX_NODES:
+            return
+        try:
+            role = obj.get_role_name()
+            name = (obj.get_name() or "").strip()
+            ss = obj.get_state_set()
+        except Exception:
+            return
+        # Web pages keep the whole page in the tree, with the part scrolled out of view not
+        # SHOWING but still VISIBLE. Elsewhere, not SHOWING means hidden.
+        shown = ss.contains(Atspi.StateType.SHOWING) or (
+            in_doc and ss.contains(Atspi.StateType.VISIBLE)
+        )
+        if not shown and role != "application":
+            return
+        in_doc = in_doc or role in ("document web", "document frame")
+        rect = extents(obj)
+
+        # Chromium reports web content in physical pixels on fractionally scaled outputs, while
+        # its own UI and other apps use logical pixels. Spot that by the document being wider
+        # than the window.
+        if role in ("document web", "document frame") and rect and div == 1.0 and scale > 1:
+            if rect[2] > (w + 2 * ox) * 1.1:
+                div = scale
+
+        # GTK 3 reports the items of an open menu relative to the menu's popup surface, whose
+        # top-left corner niri reports in window coordinates.
+        child_origin = origin
+        # GTK 3 marks the menu whose submenu is open as selected rather than expanded.
+        opened = ss.contains(Atspi.StateType.EXPANDED) or ss.contains(Atspi.StateType.SELECTED)
+        if role == "menu" and popups and opened:
+            px, py = popups[min(in_popup, len(popups) - 1)]
+            child_origin = (-px, -py)
+            in_popup += 1
+
+        listed = rect is not None and (
+            args.all
+            or role in INTERACTIVE
+            or (name and role not in CONTAINERS)
+            or role == "static" and name
+        )
+        if listed:
+            emit(obj, role, name, ss, rect, origin, depth, div)
+
+        # Nothing interesting below a text field or a link, besides its text.
+        if role in ("entry", "password text", "link") and not args.all:
+            return
+        try:
+            n = obj.get_child_count()
+        except Exception:
+            return
+        for i in range(min(n, 2000)):
+            child = obj.get_child_at_index(i)
+            if child is not None:
+                walk(child, child_origin, depth + 1, in_popup, div, in_doc)
+
+    # Coordinates from the surface origin to window coordinates.
+    walk(main_root, (ox, oy), 0, 0)
+    # Popups that are separate top-level accessibles (Chromium, Firefox) use their own surface.
+    for root in roots:
+        if root is main_root or not popups:
+            continue
+        e = extents(root)
+        if e is None:
+            continue
+        px, py = popups[-1]
+        walk(root, (-px, -py), 0, 1)
+
+    # Long pages have thousands of controls out of view; by default list only what's on screen.
+    hidden = 0
+    if not (args.offscreen or find):
+        shown = [(d, e) for d, e in lines if not any(
+            st.startswith("offscreen") for st in e.get("states", []))]
+        hidden = len(lines) - len(shown)
+        lines = shown
+
+    if not lines:
+        if find:
+            sys.exit(f"no control matches {args.find!r}")
+        sys.exit("the accessibility tree is empty; use a screenshot")
+
+    for depth, e in lines:
+        if args.json:
+            print(json.dumps(e, ensure_ascii=False))
+            continue
+        extra = []
+        if "states" in e:
+            extra.append(",".join(e["states"]))
+        if "text" in e:
+            extra.append(f"text={e['text']!r}")
+        if "value" in e:
+            extra.append(f"value={e['value']:g}")
+        name = f" {e['name']!r}" if e["name"] else ""
+        tail = f" [{'; '.join(extra)}]" if extra else ""
+        print(f"{e['role']}{name} @ {e['x']:g},{e['y']:g} ({e['w']}x{e['h']}){tail}")
+    if hidden and not args.json:
+        print(f"({hidden} more out of view; --offscreen lists them, --find searches them)")
+
+
+if __name__ == "__main__":
+    main()

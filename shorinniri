@@ -57,7 +57,9 @@ TARGET_SOFTWARE=(
     "bat" "bazaar" "bluetui" "clipnotify" "eza" "fish" "starship" "zoxide"
     "chafa" "timg" "imagemagick" "waifu2x-ncnn-vulkan" "jq" "pacman-contrib"
     "wlsunset" "pavucontrol" "downgrade" "strace" "xdg-terminal-exec" "kitty" "firefox"
-    "fastfetch" "btop" "gdu" "miyu"
+    "fastfetch" "btop" "gdu" "litemiyu-bin"
+    # --- Computer Use (niri-agent 技能的两个脚本要用：读窗口的控件要 PyGObject，agent 的 Firefox 同步登录状态要 rsync) ---
+    "python-gobject" "rsync"
     # --- AUR Specific Packages ---
     "shorin-contrib-git" "ddcutil-service" "python-pywalfox"
     "waypaper" "wl-longshot-git" "shorin-screenrec-menu-git" "shorin-proton-wrapper-git"
@@ -727,10 +729,7 @@ apply_user_configs() {
         cp -an "$WALLPAPER_SRC_DIR"/. "$wp_dest/" || true
     fi
 
-    # 初始化miyu
-    if command -v miyu 2>&1; then 
-	miyu fish-init 
-    fi
+    setup_ai_assistant
     
     shorin link >/dev/null 2>&1 || true
 
@@ -814,6 +813,16 @@ remove_dotfiles() {
     fi
 }
 
+# 终端里的 AI 助手：把 LiteMiyu 集成进 fish（终端里打字直接对话）。
+# init 和 update 都跑：以前装的是旧版 Miyu，它的终端集成留在 ~/.config/fish/conf.d/miyu.fish 里，
+# 旧的 miyu 包卸掉以后每按一次回车都会报错。--replace 会先停用旧的那一份（文件改名、不删），再装上新的。
+setup_ai_assistant() {
+    if command -v litemiyu >/dev/null 2>&1; then
+        litemiyu shellhook install --shell fish --replace >/dev/null 2>&1 \
+            || warn "$(_t "Could not set up the LiteMiyu terminal integration. Run: litemiyu shellhook install --shell fish --replace" "LiteMiyu 的终端集成没有装上，可以手动运行: litemiyu shellhook install --shell fish --replace")"
+    fi
+}
+
 # ==========================================
 # 8. 路由入口
 # ==========================================
@@ -829,6 +838,7 @@ case "$1" in
         ask_for_sudo
         manage_software
         sync_dotfiles "update" 
+        setup_ai_assistant
         ;;
     remove) remove_dotfiles ;;
     protect) manage_protection "add" "$2" ;;

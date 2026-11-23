@@ -1,0 +1,361 @@
+#!/usr/bin/env python3
+"""Launch Firefox for the niri agent seat with the user's current logins.
+
+The agent's Firefox has its own profile (two Firefox processes can't share one), so it starts
+without the user's logins. Before each launch this copies the login state of the user's default
+profile into the agent's profile: cookies (including the session cookies that only live in the
+session store), site storage (localStorage, IndexedDB), saved passwords with their key, site
+permissions and containers. Settings, extensions, bookmarks and history stay the agent's own.
+
+The copy goes one way. What the agent's Firefox changes (new logins, logouts) is overwritten at
+the next launch and never reaches the user's profile.
+
+Usage:
+    agent-firefox [--no-sync] [--source PROFILE_DIR] [URL...]
+
+Prints the JSON line of `niri msg agent launch` with the new window's id. If the agent's Firefox
+is already running, opens the URLs in a new window of it without syncing (its files are in use).
+"""
+
+import argparse
+import configparser
+import json
+import os
+import shutil
+import sqlite3
+import struct
+import subprocess
+import sys
+import tempfile
+import time
+from pathlib import Path
+
+HOME = Path.home()
+AGENT_PROFILE = HOME / ".local/share/niri-agent/firefox"
+FIREFOX_DIR = HOME / ".mozilla/firefox"
+
+# Login state: copied whole each time, replacing the agent's version; one the source doesn't have
+# is removed from the agent's profile (with a database's -wal, -shm and -journal).
+PLAIN_FILES = ["logins.json", "logins-backup.json", "containers.json"]
+SQLITE_FILES = ["cookies.sqlite", "key4.db", "permissions.sqlite"]
+
+# Keeps the agent's Firefox quiet: no first-run pages, no restore prompt, no default-browser nag.
+USER_JS = """\
+// Written by agent-firefox.
+user_pref("browser.shell.checkDefaultBrowser", false);
+user_pref("browser.aboutwelcome.enabled", false);
+user_pref("browser.startup.homepage_override.mstone", "ignore");
+user_pref("browser.sessionstore.resume_from_crash", false);
+user_pref("browser.startup.page", 0);
+user_pref("datareporting.policy.dataSubmissionPolicyBypassNotification", true);
+user_pref("toolkit.telemetry.reportingpolicy.firstRun", false);
+user_pref("signon.rememberSignons", true);
+user_pref("browser.translations.automaticallyPopup", false);
+"""
+
+
+def die(msg):
+    print(f"agent-firefox: {msg}", file=sys.stderr)
+    sys.exit(1)
+
+
+def default_profile():
+    """The profile the user's Firefox starts with."""
+    # installs.ini names the profile of each installation; profiles.ini has the older default.
+    for name, key in (("installs.ini", None), ("profiles.ini", "Default")):
+        ini = configparser.ConfigParser(interpolation=None)
+        ini.optionxform = str
+        if not ini.read(FIREFOX_DIR / name):
+            continue
+        for section in ini.sections():
+            sec = ini[section]
+            if key is None and "Default" in sec:
+                return resolve(sec["Default"])
+            if key and sec.get("Default") == "1" and "Path" in sec:
+                return resolve(sec["Path"], sec.get("IsRelative", "1") == "1")
+    die(f"no default Firefox profile found in {FIREFOX_DIR}")
+
+
+def resolve(path, relative=True):
+    p = FIREFOX_DIR / path if relative else Path(path)
+    return p
+
+
+def is_running(profile):
+    """Whether a Firefox process has the profile open."""
+    lock = profile / "lock"
+    try:
+        target = os.readlink(lock)
+    except OSError:
+        return False
+    # The link reads "host:+pid". A pid that is gone, or now belongs to another program, is a
+    # stale lock left by a Firefox that didn't exit cleanly.
+    pid = target.rpartition("+")[2]
+    if not pid.isdigit():
+        return False
+    try:
+        comm = Path(f"/proc/{pid}/comm").read_text().strip()
+        argv0 = Path(f"/proc/{pid}/cmdline").read_bytes().split(b"\0")[0]
+    except OSError:
+        return False
+    return (comm.startswith("firefox") or comm == "GeckoMain"
+            or os.path.basename(argv0).startswith(b"firefox"))
+
+
+def no_link(path):
+    """Before writing a name of the agent's profile: a symlink there goes itself, so the write stays
+    in the profile instead of following it."""
+    if path.is_symlink():
+        path.unlink()
+
+
+def copy_sqlite(src, dst, tmp):
+    """Copies a database that Firefox may be writing, with its write-ahead log.
+
+    Firefox keeps an exclusive lock on some databases, so the backup API can't read them. Copy the
+    files, fold the log into the copy, and retry if the copy came out torn.
+    """
+    if not src.exists():
+        return
+    for attempt in range(5):
+        work = tmp / f"{src.name}.{attempt}"
+        work.mkdir()
+        copy = work / src.name
+        shutil.copy2(src, copy)
+        for suffix in ("-wal", "-shm"):
+            side = src.with_name(src.name + suffix)
+            if side.exists():
+                shutil.copy2(side, work / side.name)
+        try:
+            db = sqlite3.connect(copy)
+            ok = db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+            if ok:
+                db.execute("PRAGMA wal_checkpoint(TRUNCATE)")
+                db.execute("PRAGMA journal_mode=DELETE")
+            db.close()
+        except sqlite3.DatabaseError:
+            ok = False
+        if ok:
+            for suffix in ("-wal", "-shm", "-journal"):
+                dst.with_name(dst.name + suffix).unlink(missing_ok=True)
+            no_link(dst)        # across file systems move copies, and a copy follows a link
+            shutil.move(copy, dst)
+            return
+        time.sleep(0.2)
+    die(f"couldn't get a consistent copy of {src}")
+
+
+def lz4_block(src, size):
+    """Decompresses one LZ4 block, the format of Firefox's .jsonlz4 files."""
+    out = bytearray()
+    i, n = 0, len(src)
+    while i < n:
+        token = src[i]
+        i += 1
+        length = token >> 4
+        if length == 15:
+            while True:
+                if i >= n:
+                    raise ValueError("bad lz4 data")
+                b = src[i]
+                i += 1
+                length += b
+                if b != 255:
+                    break
+        if i + length > n:
+            raise ValueError("bad lz4 data")
+        out += src[i : i + length]
+        i += length
+        if i >= n:
+            break
+        if i + 2 > n:
+            raise ValueError("bad lz4 data")
+        offset = src[i] | (src[i + 1] << 8)
+        i += 2
+        if offset == 0 or offset > len(out):
+            raise ValueError("bad lz4 data")
+        length = token & 15
+        if length == 15:
+            while True:
+                if i >= n:
+                    raise ValueError("bad lz4 data")
+                b = src[i]
+                i += 1
+                length += b
+                if b != 255:
+                    break
+        length += 4
+        start = len(out) - offset
+        if offset >= length:
+            out += out[start : start + length]
+        else:
+            for k in range(length):
+                out.append(out[start + k])
+    if len(out) != size:
+        raise ValueError("bad lz4 data")
+    return bytes(out)
+
+
+def session_cookies(profile):
+    """Cookies without an expiry date: Firefox keeps them only in the session store."""
+    for name in ("recovery.jsonlz4", "recovery.baklz4"):
+        path = profile / "sessionstore-backups" / name
+        try:
+            data = path.read_bytes()
+            if data[:8] != b"mozLz40\0":
+                continue
+            size = struct.unpack("<I", data[8:12])[0]
+            return json.loads(lz4_block(data[12:], size)).get("cookies", [])
+        except (OSError, ValueError, json.JSONDecodeError, struct.error):
+            continue
+    return []
+
+
+def origin_attributes(attrs):
+    """The suffix form of origin attributes used in cookies.sqlite, like `^partitionKey=...`."""
+    from urllib.parse import quote
+
+    # Firefox writes the keys in this order.
+    order = ["userContextId", "privateBrowsingId", "firstPartyDomain",
+             "geckoViewSessionContextId", "partitionKey"]
+    keys = [k for k in order if k in attrs] + sorted(k for k in attrs if k not in order)
+    parts = []
+    for key in keys:
+        value = attrs[key]
+        if value in ("", 0, None):
+            continue
+        parts.append(f"{key}={quote(str(value), safe='')}")
+    return "^" + "&".join(parts) if parts else ""
+
+
+def add_session_cookies(db_path, cookies):
+    """Stores session cookies as cookies that last a day, so the agent's Firefox loads them."""
+    if not cookies or not db_path.is_file():
+        return 0                # no cookie database to add to; Firefox makes one on first start
+    now_us = int(time.time() * 1_000_000)
+    expiry_ms = int((time.time() + 86400) * 1000)
+    db = sqlite3.connect(db_path)
+    table = "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'moz_cookies'"
+    if not db.execute(table).fetchone():
+        db.close()
+        return 0
+    rows = []
+    for c in cookies:
+        rows.append(
+            (
+                origin_attributes(c.get("originAttributes", {})),
+                c.get("name", ""),
+                c.get("value", ""),
+                c["host"],
+                c.get("path", "/"),
+                expiry_ms,
+                now_us,
+                now_us,
+                1 if c.get("secure") else 0,
+                1 if c.get("httponly") else 0,
+                c.get("sameSite", 0),
+                c.get("schemeMap", 0),
+                1 if c.get("isPartitioned") else 0,
+                now_us,
+            )
+        )
+    with db:
+        db.executemany(
+            "INSERT OR IGNORE INTO moz_cookies (originAttributes, name, value, host, path, "
+            "expiry, lastAccessed, creationTime, isSecure, isHttpOnly, sameSite, schemeMap, "
+            "isPartitionedAttributeSet, updateTime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            rows,
+        )
+    db.close()
+    return len(rows)
+
+
+def drop(path):
+    """Removes a file or folder of the agent's profile. A symlink goes itself, not what it points to."""
+    if path.is_dir() and not path.is_symlink():
+        shutil.rmtree(path)
+    else:
+        path.unlink(missing_ok=True)
+
+
+def sync(source, agent):
+    agent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="agent-firefox-") as tmp:
+        tmp = Path(tmp)
+        for name in SQLITE_FILES:
+            if (source / name).exists():
+                copy_sqlite(source / name, agent / name, tmp)
+            else:
+                for suffix in ("", "-wal", "-shm", "-journal"):
+                    drop(agent / f"{name}{suffix}")
+        for name in PLAIN_FILES:
+            if (source / name).exists():
+                no_link(agent / name)
+                shutil.copy2(source / name, agent / name)
+            else:
+                drop(agent / name)
+
+    cookies = add_session_cookies(agent / "cookies.sqlite", session_cookies(source))
+
+    # Site storage; the per-site caches are big and not needed for logins.
+    if (source / "storage").is_dir():
+        no_link(agent / "storage")
+        subprocess.run(
+            [
+                "rsync", "-a", "--delete",
+                "--exclude=/default/*/cache/",
+                f"{source}/storage/", f"{agent}/storage/",
+            ],
+            check=True,
+        )
+    else:
+        drop(agent / "storage")
+
+    no_link(agent / "user.js")
+    (agent / "user.js").write_text(USER_JS)
+    return cookies
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    parser.add_argument("--no-sync", action="store_true", help="launch without copying logins")
+    parser.add_argument("--source", type=Path, help="profile to copy from (default: the user's)")
+    parser.add_argument("--profile", type=Path, default=AGENT_PROFILE, help="agent's profile")
+    parser.add_argument("urls", nargs="*")
+    args = parser.parse_args()
+
+    agent = args.profile
+    # A profile folder that is a symlink is fine (kept on another disk); one that points nowhere is not.
+    if agent.is_symlink() and not agent.exists():
+        die(f"{agent} is a symlink to {os.readlink(agent)}, which does not exist: "
+            "create that folder or remove the link")
+    running = is_running(agent)
+    if not running and not args.no_sync:
+        source = args.source or default_profile()
+        if not source.is_dir():
+            die(f"{source} is not a Firefox profile")
+        start = time.monotonic()
+        cookies = sync(source, agent)
+        print(
+            f"agent-firefox: copied logins from {source.name} "
+            f"({cookies} session cookies) in {time.monotonic() - start:.1f} s",
+            file=sys.stderr,
+        )
+    elif running:
+        print("agent-firefox: the agent's Firefox is running, opening a new window in it",
+              file=sys.stderr)
+
+    agent.mkdir(parents=True, exist_ok=True)
+    # Firefox hands a launch off only to an instance with the same profile, so the user's
+    # Firefox is never involved, and a running agent Firefox opens a new window.
+    # Accessibility on, so that `agent-ui` can list the page's controls.
+    firefox = ["env", "GNOME_ACCESSIBILITY=1", "firefox", "--profile", str(agent)]
+    if running:
+        firefox.append("--new-window")
+    niri = os.environ.get("NIRI", "niri")
+    cmd = [niri, "msg", "agent", "launch", "--", *firefox, *args.urls]
+    sys.exit(subprocess.run(cmd).returncode)
+
+
+if __name__ == "__main__":
+    main()
