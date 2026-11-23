@@ -6,6 +6,7 @@
 - Niri Wiki: <https://github.com/niri-wm/niri/wiki>
 - ShorinArch: <https://shorin.xyz/wiki>
 - Shorin 一键配置脚本: <https://shorin.xyz/wiki/archsetup>
+- Shorin的Arch交流Q群：130515298
 
 ## 重要工具
 
@@ -17,24 +18,14 @@
 
 <https://github.com/miyu-agent/litemiyu>
 
-LiteMiyu 是我做的 AI 助手，已集成进终端，终端打字直接无缝对话。
+LiteMiyu 是我做的 AI 助手，已集成进终端，终端打字直接无缝对话。LiteMiyu 不自带模型，第一次使用要先配置一家供应商，推荐使用 [Deepseek 的 API服务](https://platform.deepseek.com/usage)，如果想要白嫖 AI 额度可以看[这篇文章](https://github.com/SHORiN-KiWATA/Shorin-ArchLinux-Guide/blob/main/wiki/%E6%B4%BB%E7%94%A8AI.md#%E5%93%AA%E9%87%8C%E6%9C%89%E4%BE%BF%E5%AE%9C%E5%A5%BD%E7%94%A8%E7%9A%84-ai)  。如果有问题可以先向 AI 助手寻求帮助。
 
 - 运行 `litemiyu` 进入全屏的 TUI
 - 运行 `litemiyu config` 进行自定义配置，支持自定义提示词、供应商、模型
 
-如果有问题可以先询问这个 AI 助手。
-
-LiteMiyu 不自带模型，第一次使用要先配置一家供应商：在终端里随便打一句话，照提示按 Enter 就会进入配置引导；也可以直接运行 `litemiyu`。
-
 #### Computer Use
 
-Shorin Niri 用的 niri 支持 Computer Use：AI 有自己的一套鼠标和键盘，可以在后台操作图形界面的应用（打开应用、看窗口的画面、点击、打字、按键），不会动你的光标和焦点。AI 打开的窗口放在名叫 `agent` 的工作区里，不打扰你正在做的事。
-
-LiteMiyu 已经装好了对应的技能 `niri-agent`，直接和它说要做什么就行，例如「帮我用 Firefox 打开 B 站，看看现在的热门视频有哪些」「帮我看看设置窗口里现在的输出音量是多少」。
-
-- 点一下 AI 打开的窗口就可以接管它（比如需要你登录、输验证码的时候）。你在用的时候 AI 不会动它，你切走以后它再继续。
-- AI 用 Firefox 的时候带着你现在的登录状态，但是不会替你发帖、发消息、下单、改设置，除非你明确要求。
-- 看窗口的画面要模型支持图片。不支持图片的模型只能靠读控件上的文字来操作。
+shorin-niri 支持让 AI 在不影响你使用的情况下操作你的电脑。LiteMiyu 已经装好了对应的技能 `niri-agent`，放在`~/.config/litemiyu/skills/`。需要让 AI 操作窗口时直接让 AI 使用 `niri-agent` 功能做事就行。
 
 #### 卸载
 
@@ -74,9 +65,9 @@ yay -Rns litemiyu-bin
 ## 输入法
 
 - `Super+空格` 或者 `Ctrl+空格` 切换输入法。第一次使用输入法有可能无法使用，`Mod+F1` 开关一下输入法可以解决。
-- 切换为中文后输入时按下 `F4` 可以打开菜单。如果出现卡 A 的情况可以试试按右 `Shift` 解决。
+- 切换为中文后输入时按下 `F4` 可以打开菜单。如果出现卡英文的情况可以试试按右 `Shift` 解决。
 - 使用 `fcitx5-configtool` 命令或者打开应用菜单里的「fcitx5 配置」可以对输入法进行细节配置。
-- 如果输入法出现异常，看这个页面：<https://github.com/SHORiN-KiWATA/Shorin-ArchLinux-Guide/wiki/%E4%B8%AD%E6%96%87%E8%BE%93%E5%85%A5%E6%B3%95>，通常能解决问题，如果无法解决可以在交流群询问。
+- 如果输入法出现异常，[看这个页面](https://github.com/SHORiN-KiWATA/Shorin-ArchLinux-Guide/wiki/%E4%B8%AD%E6%96%87%E8%BE%93%E5%85%A5%E6%B3%95)，通常能解决问题，如果无法解决可以在交流群询问。
 
 ### 输入法 AI 大模型联想词
 
@@ -134,13 +125,7 @@ yay -Rns litemiyu-bin
 
 blur 相关的设置在 `~/.config/niri/blur.kdl` 里，不喜欢可以自己调整。全局透明度的设置在 `rule.kdl` 里。
 
-## waybar-niri-taskbar-git
-
-这是一个 waybar 的 dock 模块，在 waybar 上显示已打开的应用。感兴趣的可以安装这个包后编辑 `~/.config/waybar/config.jsonc` 启用 taskbar 模块。
-
-> 注意：这个模块仅支持发行版本的 niri。
-
-## 剪贴板同步
+## QQ修复
 
 <https://github.com/SHORiN-KiWATA/linuxqq-wayland-fix>
 
